@@ -15,6 +15,7 @@ export interface CustomHttpHeaderOptions {
     token?: boolean;
     X_Lang?: boolean;
     isJSONRequest?: boolean;
+    isMultiPart?: boolean;
     additionalParams?: Array<{ name: string, value: string }>;
 }
 

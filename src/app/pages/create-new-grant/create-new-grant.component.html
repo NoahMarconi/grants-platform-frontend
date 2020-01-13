@@ -59,8 +59,8 @@
 
         <div formGroupName="singleDeliveryDate" *ngIf="isSelected('singleDeliveryDate')" class="hide-show-section">
           <ion-item>
-            <ion-datetime class="form-control" displayFormat="MMM DD YYYY" placeholder="Funding Expiry Date"
-              formControlName="fundingExpiryDate">
+            <ion-datetime class="form-control" [min]="minYear" [max]="maxYear" displayFormat="MMM DD YYYY"
+              placeholder="Funding Expiry Date" formControlName="fundingExpiryDate">
             </ion-datetime>
           </ion-item>
           <div *ngIf="submitted && singleDelivery.fundingExpiryDate.invalid">
@@ -70,8 +70,8 @@
           </div>
 
           <ion-item>
-            <ion-datetime class="form-control" displayFormat="MMM DD YYYY" placeholder="Completion Date"
-              formControlName="completionDate"></ion-datetime>
+            <ion-datetime class="form-control" [min]="minYear" [max]="maxYear" displayFormat="MMM DD YYYY"
+              placeholder="Completion Date" formControlName="completionDate"></ion-datetime>
           </ion-item>
           <div *ngIf="submitted && singleDelivery.completionDate.invalid">
             <span class="error">
@@ -98,8 +98,8 @@
 
             <ion-col size="5">
               <ion-item>
-                <ion-datetime class="form-control" displayFormat="MMM DD YYYY" placeholder="Completion Date"
-                  formControlName="completionDate">
+                <ion-datetime class="form-control" [min]="minYear" [max]="maxYear" displayFormat="MMM DD YYYY"
+                  placeholder="Completion Date" formControlName="completionDate">
                 </ion-datetime>
               </ion-item>
 

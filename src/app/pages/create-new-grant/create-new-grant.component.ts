@@ -22,6 +22,8 @@ export class CreateNewGrantComponent implements OnInit {
   submitted = false;
   toastTitle = 'Grant';
   userData: any;
+  minYear: any;
+  maxYear: any;
 
   public myForm: FormGroup;
   public tempForm: FormGroup;
@@ -44,7 +46,10 @@ export class CreateNewGrantComponent implements OnInit {
     public router: Router,
     private fb: FormBuilder) {
 
-    this.bindModel()
+    this.bindModel();
+    this.minYear = new Date().getFullYear();
+    this.maxYear = this.minYear + 100;
+
     this.user = JSON.parse(localStorage.getItem(AppSettings.localStorage_keys.userData));
 
     this.userService.getAll().subscribe((res: HTTPRESPONSE) => {
@@ -122,7 +127,7 @@ export class CreateNewGrantComponent implements OnInit {
   }
 
   requestAutocompleteItems = (name: string): Observable<any> => {
-    name = name.toLocaleLowerCase();
+    // name = name.toLocaleLowerCase();
     return this.userService.searchUser(name)
       .pipe(map(items => items.data.map(item => item.userName)));
   }
@@ -148,7 +153,9 @@ export class CreateNewGrantComponent implements OnInit {
   onSubmit() {
     this.submitted = true;
 
-    console.log("this.myForm.controls", this.myForm.controls);
+    this.router.navigate(['pages/my-grants']);
+
+    // console.log("this.myForm.controls", this.myForm.controls);
     if (this.myForm.controls.type.value == "singleDeliveryDate") {
       if (this.myForm.controls.grantName.invalid || this.myForm.controls.grantLink.invalid || this.myForm.controls.singleDeliveryDate.invalid
         || this.myForm.controls.grantManager.invalid || this.myForm.controls.grantees.invalid || this.myForm.controls.grantAmount.invalid) {
@@ -175,7 +182,6 @@ export class CreateNewGrantComponent implements OnInit {
     this.userData.find((user) => {
       if (user.userName == this.myForm.value.grantManager[0].display) {
         this.myForm.value.grantManager = [user._id]
-        // this.myForm.value["grantManager"] = [user._id]
       }
     })
 
@@ -185,8 +191,10 @@ export class CreateNewGrantComponent implements OnInit {
     this.processing = true;
     this.grantService.createGrant(this.myForm.value).subscribe((res: HTTPRESPONSE) => {
       if (res.message) {
+        this.processing = false;
         this.toastr.success(res.message, this.toastTitle);
-        this.modalCtrl.dismiss();
+        let data = { reload: true }
+        this.modalCtrl.dismiss(data);
         this.router.navigate(['pages/my-grants']);
       }
     }, (err) => {

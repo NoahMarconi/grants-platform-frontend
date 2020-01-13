@@ -12,6 +12,7 @@ import { StatusBar } from '@ionic-native/status-bar/ngx';
 import { SplashScreen } from '@ionic-native/splash-screen/ngx';
 import { CreateNewGrantModule } from './create-new-grant/create-new-grant.module';
 import { CreateNewGrantComponent } from './create-new-grant/create-new-grant.component';
+import { NgxChartsModule } from '@swimlane/ngx-charts';
 
 const PAGES_COMPONENTS = [
     PagesComponent,
@@ -22,6 +23,7 @@ const PAGES_COMPONENTS = [
         IonicModule,
         CommonModule,
         FormsModule,
+        // NgxChartsModule,
         CreateNewGrantModule,
         PagesRoutingModule
         // RouterModule.forChild(routes)

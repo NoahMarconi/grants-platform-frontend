@@ -13,8 +13,6 @@ import { ViewGruntComponent } from '../view-grunt/view-grunt.component';
   styleUrls: ['./latest-grants.component.scss'],
 })
 export class LatestGrantsComponent implements OnInit {
-
-  SERVER_URL = ENVIRONMENT.TEMP_URL;
   allGrant: any;
   seachResult: any = [];
 
@@ -22,10 +20,7 @@ export class LatestGrantsComponent implements OnInit {
     public modalController: ModalController,
     private grantService: GrantService) {
 
-    this.grantService.getAll().subscribe((res: HTTPRESPONSE) => {
-      this.allGrant = res.data;
-      this.seachResult = this.allGrant;
-    });
+    this.getAllGrants();
   }
 
   ngOnInit() {
@@ -62,7 +57,24 @@ export class LatestGrantsComponent implements OnInit {
       componentProps: {
         grantData: data
       }
-    })
+    });
+
+    modal.onDidDismiss()
+      .then((data) => {
+        const reload = data['data'];
+        // console.log(reload)
+        if (reload && reload.hasOwnProperty('reload') && reload.reload) {
+          this.getAllGrants();
+        }
+      });
+
     return await modal.present();
+  }
+
+  getAllGrants() {
+    this.grantService.getAll().subscribe((res: HTTPRESPONSE) => {
+      this.allGrant = res.data;
+      this.seachResult = this.allGrant;
+    });
   }
 }

@@ -7,7 +7,7 @@
     </ion-buttons>
 
     <ion-title *ngIf="!searchBar">
-      {{path}}
+      <!-- {{path}} -->
     </ion-title>
 
     <form [formGroup]="myForm" class="">
@@ -35,7 +35,7 @@
 
     <ion-buttons slot="end">
       <ion-button mode="md" class="user-profile-menu">
-        <div class="user-icon"> <img src="{{SERVER_URL}}/{{userData.picture}}" alt="" style="max-width: 20%;"></div>
+        <div class="user-icon"> <img src="{{userData.picture}}" alt="" style="max-width: 20%;"></div>
         <span>{{userData.userName}}<i class="gp-arrow-down" (click)="userMenuPopover($event)"></i></span>
       </ion-button>
     </ion-buttons>

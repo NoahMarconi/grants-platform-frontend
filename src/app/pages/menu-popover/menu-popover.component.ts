@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { AuthService } from 'src/app/services/auth.service';
 import { Router } from '@angular/router';
+import { ModalController, PopoverController } from '@ionic/angular';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-menu-popover',
@@ -9,14 +11,30 @@ import { Router } from '@angular/router';
 })
 export class MenuPopoverComponent implements OnInit {
 
-  constructor(public router: Router, private authService: AuthService) { }
+  toastTitle = "User";
+
+  constructor(public router: Router,
+    private toastr: ToastrService,
+    public popoverCtrl: PopoverController,
+    private authService: AuthService) { }
 
   ngOnInit() { }
 
-  async signOut($event) {
-    this.authService.logout();
-    this.router.navigate(['auth']);
-
+  dismiss() {
+    this.popoverCtrl.dismiss()
   }
+
+  signOut() {
+    this.authService.logout();
+    this.toastr.success("Sign out successfully", this.toastTitle);
+    this.router.navigate(['auth']);
+    this.dismiss();
+  }
+
+  profile() {
+    this.router.navigate(['pages/user-profile']);
+    this.dismiss();
+  }
+
 
 }

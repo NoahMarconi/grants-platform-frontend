@@ -18,7 +18,6 @@ import { GrantService } from 'src/app/services/grant.service';
   styleUrls: ['header.component.scss']
 })
 export class HeaderComponent implements OnInit {
-  SERVER_URL = ENVIRONMENT.TEMP_URL;
   userData: any;
   allgrant: any;
 

@@ -42,6 +42,10 @@ export class GrantService extends HttpHelper {
         return this.http.get(this.apiUrl + '/grant', this.getHttpOptions())
     }
 
+    getById(Id: any): Observable<any> {
+        return this.http.get(this.apiUrl + '/grant/' + Id, this.getHttpOptions())
+    }
+
     getGrantCreatedByMe(): Observable<any> {
         return this.http.get(this.apiUrl + '/grant/createdByMe/' + this.user._id, this.getHttpOptions());
     }
@@ -54,4 +58,7 @@ export class GrantService extends HttpHelper {
         return this.http.get(this.apiUrl + '/grant/managedByMe/' + this.user._id, this.getHttpOptions());
     }
 
+    getTrendingGrants(): Observable<any> {
+        return this.http.get(this.apiUrl + '/grant/get/getTrendingGrants', this.getHttpOptions());
+    }
 }

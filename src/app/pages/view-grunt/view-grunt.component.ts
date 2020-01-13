@@ -6,6 +6,9 @@ import { GrantFundService } from 'src/app/services/grantFund.service';
 import { HTTPRESPONSE } from 'src/app/common/http-helper/http-helper.class';
 import { ToastrService } from 'ngx-toastr';
 import { AppSettings } from 'src/app/config/app.config';
+import { Router } from '@angular/router';
+import { GrantService } from 'src/app/services/grant.service';
+import * as moment from 'moment';
 
 @Component({
   selector: 'app-view-grunt',
@@ -17,7 +20,16 @@ export class ViewGruntComponent implements OnInit {
   SERVER_URL = ENVIRONMENT.TEMP_URL;
 
   @Input() grantData: any;
+
+  statusEnum = {
+    PENDING: "pending",
+    COMPLETED: "completed",
+    TOBERECEIVED: "tobereceived"
+  }
+
+  grant: any;
   toastTitle = "Grant Funding"
+  multipleMilestones = false;
   processing = false;
   submitted = false;
   user: any;
@@ -32,12 +44,73 @@ export class ViewGruntComponent implements OnInit {
   constructor(public modalCtrl: ModalController,
     private toastr: ToastrService,
     private navParams: NavParams,
-    private grantFundService: GrantFundService) {
+    public router: Router,
+    private grantFundService: GrantFundService,
+    private grantService: GrantService) {
 
     this.user = JSON.parse(localStorage.getItem(AppSettings.localStorage_keys.userData));
     this.grantData = navParams.get('grantData');
-    console.log("grantData", this.grantData)
+
+    (async () => {
+      try {
+        let res = await this.grantService.getById(this.grantData._id).toPromise();
+        this.grant = res.data;
+
+        if (this.grant.type == "multipleMilestones") {
+          this.multipleMilestones = true;
+
+          let tobereceived = true;
+          this.grant.multipleMilestones = this.grant.multipleMilestones.map((data: any) => {
+            let status: any;
+            let now = new Date().toISOString();
+
+            let isAfter = moment(data.completionDate).isAfter(moment(now));
+            // let isBefore = moment(data.completionDate).isBefore(moment(now));
+
+            if (isAfter) {
+              if (tobereceived) {
+                status = this.statusEnum.TOBERECEIVED;
+                tobereceived = false;
+              } else {
+                status = this.statusEnum.PENDING;
+              }
+            }
+
+            if (!isAfter) {
+              status = this.statusEnum.COMPLETED;
+            }
+
+            data.completionDate = moment(data.completionDate).format('DD/MM/YYYY');
+            data = {
+              ...data,
+              status: status
+            }
+            return data;
+          });
+        } else {
+          this.grant.singleDeliveryDate.completionDate = moment(this.grant.singleDeliveryDate.completionDate).format('DD/MM/YYYY');
+          this.grant.singleDeliveryDate.fundingExpiryDate = moment(this.grant.singleDeliveryDate.fundingExpiryDate).format('DD/MM/YYYY');
+
+          let now = new Date().toISOString();
+          let isAfter = moment(this.grant.singleDeliveryDate.completionDate).isAfter(moment(now));
+
+          if (isAfter) {
+            this.grant.singleDeliveryDate["status"] = this.statusEnum.TOBERECEIVED;
+          } else {
+            this.grant.singleDeliveryDate["status"] = this.statusEnum.COMPLETED;
+          }
+        }
+
+        // console.log("this.grant", this.grant);
+
+      } catch (e) {
+        this.toastr.error('Error. Please try after sometime', 'Grant');
+      }
+
+    })();
+
   }
+
   dismiss() {
     this.modalCtrl.dismiss()
   }
@@ -67,7 +140,8 @@ export class ViewGruntComponent implements OnInit {
     this.grantFundService.createGrantFund(this.grantFund).subscribe((res: HTTPRESPONSE) => {
       if (res.message) {
         this.toastr.success(res.message, this.toastTitle);
-        this.modalCtrl.dismiss();
+        let data = { reload: true }
+        this.modalCtrl.dismiss(data);
       }
     }, (err) => {
       this.processing = true;

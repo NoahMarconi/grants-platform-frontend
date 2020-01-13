@@ -35,9 +35,10 @@ export class RegisterComponent implements OnInit {
 
   onSubmit() {
     this.processing = true;
-    delete this.user.confirmPassword;
+    // delete this.user.confirmPassword;
     this.authenticationService.signup(this.user).subscribe((res: HTTPRESPONSE) => {
       if (res.message) {
+        this.processing = false;
         this.toastr.success(res.message, this.toastTitle);
       }
       this.router.navigate(['auth/login']);

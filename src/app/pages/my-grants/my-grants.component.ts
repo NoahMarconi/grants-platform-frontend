@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { Events } from '@ionic/angular';
+
 import { PopoverController, ModalController } from '@ionic/angular';
 
 import { MenuPopoverComponent } from '../menu-popover/menu-popover.component';
@@ -10,6 +12,7 @@ import { AmountsReceiveComponent } from '../amounts-receive/amounts-receive.comp
 import { GrantService, IGrant } from 'src/app/services/grant.service';
 import { HTTPRESPONSE } from 'src/app/common/http-helper/http-helper.class';
 import { ENVIRONMENT } from 'src/environments/environment';
+import { GrantFundService } from 'src/app/services/grantFund.service';
 
 @Component({
   selector: 'app-my-grants',
@@ -17,8 +20,6 @@ import { ENVIRONMENT } from 'src/environments/environment';
   styleUrls: ['./my-grants.component.scss'],
 })
 export class MyGrantsComponent implements OnInit {
-
-  SERVER_URL = ENVIRONMENT.TEMP_URL;
 
   createdByMeGrant: any;
   fundedByMeGrant: any;
@@ -30,22 +31,17 @@ export class MyGrantsComponent implements OnInit {
 
   constructor(public popoverCtrl: PopoverController,
     public modalController: ModalController,
-    private grantService: GrantService) {
+    private grantService: GrantService,
+    private grantFundService: GrantFundService,
+    public events: Events
+  ) {
 
-    this.grantService.getGrantCreatedByMe().subscribe((res: HTTPRESPONSE) => {
-      this.createdByMeGrant = res.data;
-      this.searchCreatedBy = this.createdByMeGrant;
-      // console.log("createdByMeGrant",this.createdByMeGrant)
-    });
-
-    this.grantService.getGrantFundedByMe().subscribe((res: HTTPRESPONSE) => {
-      this.fundedByMeGrant = res.data;
-      this.searchFundedBy = this.fundedByMeGrant;
-    });
-
-    this.grantService.getGrantManagedByMe().subscribe((res: HTTPRESPONSE) => {
-      this.mangedByMeGrant = res.data;
-      this.searchManagedBy = this.mangedByMeGrant;
+    this.getAllGrants();
+    this.events.subscribe('my-grants', (data) => {
+      console.log(data);
+      if (data) {
+        this.getAllGrants();
+      }
     });
   }
 
@@ -68,7 +64,17 @@ export class MyGrantsComponent implements OnInit {
       componentProps: {
         grantData: data
       }
-    })
+    });
+
+    modal.onDidDismiss()
+      .then((data) => {
+        const reload = data['data'];
+        // console.log("reload", reload);
+        if (reload && reload.hasOwnProperty('reload') && reload.reload) {
+          this.getAllGrants();
+        }
+      });
+
     return await modal.present();
   }
 
@@ -107,6 +113,26 @@ export class MyGrantsComponent implements OnInit {
   }
 
   ngOnInit() {
+    console.log("ngOnInit");
+  }
+
+  getAllGrants() {
+    this.grantService.getGrantCreatedByMe().subscribe((res: HTTPRESPONSE) => {
+      this.createdByMeGrant = res.data;
+      this.searchCreatedBy = this.createdByMeGrant;
+      // console.log("createdByMeGrant",this.createdByMeGrant)
+    });
+
+    this.grantService.getGrantFundedByMe().subscribe((res: HTTPRESPONSE) => {
+      this.fundedByMeGrant = res.data
+      this.searchFundedBy = this.fundedByMeGrant;
+      console.log("fundedByMeGrant", this.fundedByMeGrant);
+    });
+
+    this.grantService.getGrantManagedByMe().subscribe((res: HTTPRESPONSE) => {
+      this.mangedByMeGrant = res.data;
+      this.searchManagedBy = this.mangedByMeGrant;
+    });
   }
 
   handleChange(e) {

@@ -6,6 +6,7 @@ import { Routes, RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { ViewGruntComponent } from './view-grunt.component';
 import { GrantFundService } from 'src/app/services/grantFund.service';
+import { GrantService } from 'src/app/services/grant.service';
 
 
 const routes: Routes = [
@@ -23,6 +24,6 @@ const routes: Routes = [
     // RouterModule.forChild(routes)
   ],
   declarations: [ViewGruntComponent],
-  providers: [GrantFundService]
+  providers: [GrantFundService, GrantService]
 })
 export class ViewGruntModule { }

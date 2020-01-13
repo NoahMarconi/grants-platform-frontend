@@ -26,7 +26,7 @@
           <ion-item mode="md" lines="none">
             <div class="users-container">
               <div class="users">
-                <img *ngFor="let user of crea.grantees" src="{{SERVER_URL}}/{{user.picture}}" alt="">
+                <img *ngFor="let user of crea.donors | slice:0:4" src="{{user?.picture}}" alt="">
               </div>
             </div>
             <ion-button class="details" mode="md" slot="end" (click)="viewGrunt(crea)">See Details</ion-button>
@@ -57,7 +57,7 @@
           <ion-item mode="md" lines="none">
             <div class="users-container">
               <div class="users">
-                <img *ngFor="let user of fund.grantees" src="{{SERVER_URL}}/{{user.picture}}" alt="">
+                <img *ngFor="let user of fund.donors | slice:0:4" src="{{user?.picture}}" alt="">
               </div>
             </div>
             <ion-button class="details" mode="md" slot="end" (click)="viewGrunt(fund)">See Details</ion-button>
@@ -65,7 +65,7 @@
         </ion-card-content>
       </ion-card>
 
-      <ion-card class="grant">
+      <!-- <ion-card class="grant">
         <ion-card-header>
 
           <ion-card-title>All Modal Pages</ion-card-title>
@@ -90,7 +90,7 @@
             Amounts each receipent will receive
           </ion-button>
         </ion-card-content>
-      </ion-card>
+      </ion-card> -->
     </ion-col>
     <ion-col size="12" size-md="4">
       <ion-item mode="md" lines="none" class="heading">
@@ -115,7 +115,7 @@
           <ion-item mode="md" lines="none">
             <div class="users-container">
               <div class="users">
-                <img *ngFor="let user of manage.grantees" src="{{SERVER_URL}}/{{user.picture}}" alt="">
+                <img *ngFor="let user of manage.donors | slice:0:4" src="{{user?.picture}}" alt="">
               </div>
             </div>
             <ion-button class="details" mode="md" slot="end" (click)="viewGrunt(manage)">See Details

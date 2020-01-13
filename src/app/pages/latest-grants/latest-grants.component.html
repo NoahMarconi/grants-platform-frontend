@@ -20,7 +20,7 @@
                   <p>{{lg.grantLink}}</p>
                   <div class="users-container">
                     <div class="users">
-                      <img *ngFor="let user of lg.grantees" src="{{SERVER_URL}}/{{user.picture}}" alt="">
+                      <img *ngFor="let user of lg.grantees | slice:0:4" src="{{user.picture}}" alt="">
                     </div>
                   </div>
                 </ion-label>
@@ -29,7 +29,7 @@
             <li>
               <div class="manager-details">
                 <h2>Grant Manager</h2>
-                <img *ngFor="let user of lg.grantManager" src="{{SERVER_URL}}/{{user.picture}}" alt="">
+                <img *ngFor="let user of lg.grantManager" src="{{user.picture}}" alt="">
                 <a href="">{{lg.grantManager.userName}}</a>
               </div>
             </li>
@@ -37,9 +37,9 @@
               <div class="recepients-details">
                 <h2>Grant Recepients</h2>
                 <div class="users">
-                  <img *ngFor="let user of lg.grantees" src="{{SERVER_URL}}/{{user.picture}}" alt="">
+                  <img *ngFor="let user of lg.donors | slice:0:4; let i=index" src="{{user?.picture}}" alt="">
                 </div>
-                <a href="">SEE ALL</a>
+                <a *ngIf="lg.donors.length > 4" href="">SEE ALL</a>
               </div>
             </li>
             <li class="cost-details">

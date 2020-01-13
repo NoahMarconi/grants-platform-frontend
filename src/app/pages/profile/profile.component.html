@@ -1,0 +1,42 @@
+<app-header></app-header>
+
+<ion-content color="light">
+    <ion-row class="page-row">
+
+        <ion-col size="12">
+            <ion-item mode="md" lines="none" class="heading">
+                <ion-label>User Profile</ion-label>
+            </ion-item>
+
+            <hr class="dassed-line">
+            <ion-card class="grant" mode="md">
+                <ion-card-content>
+                    <ion-row>
+                        <div class="users-container">
+                            <div class="users">
+                                <img src="{{userData.picture}}" alt="" style="max-width: 70%;">
+                            </div>
+                            <div class="file-input-container">
+                                <label color="primary">
+                                    <input type="file" accept="image/*" [(ngModel)]="profile" (change)="profileUpload($event)" />
+                                    Change Profile
+                                </label>
+                            </div>
+                        </div>
+                        <div>
+                            <ion-label class="grants-details">
+                                <h2>User Name : {{userData.userName}}</h2>
+                                <h2>First Name : {{ userData.firstName}}</h2>
+                                <h2>Last Name : {{userData.lastName}}</h2>
+                            </ion-label>
+                            &nbsp;
+                            <ion-button mode="md" (click)="resetPassword(userData._id)">Reset PassWord</ion-button>
+                        </div>
+                    </ion-row>
+                </ion-card-content>
+            </ion-card>
+
+        </ion-col>
+
+    </ion-row>
+</ion-content>

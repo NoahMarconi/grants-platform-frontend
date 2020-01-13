@@ -1,69 +1,60 @@
-<app-header></app-header>
+<app-header (onChange)="handleChange($event)"></app-header>
 
 <ion-content color="light">
   <ion-row class="page-row">
-    <ion-col size="12" size-md="6">
+    <ion-col size="12">
       <ion-item mode="md" lines="none" class="heading">
-        <ion-label>Approved Payments</ion-label>
+        <ion-label>Trending Grants</ion-label>
         <ion-button mode="md" size="large" fill="clear" slot="end" color="dark"><i class="gp-filter"></i></ion-button>
       </ion-item>
 
       <hr class="dassed-line">
 
-      <ion-card class="grant" mode="md" *ngFor="let ap of approvedPayments">
+      <ion-card class="grant" mode="md" *ngFor="let lg of seachResult">
         <ion-card-content>
-          <ion-item mode="md" lines="none">
-            <ion-label>
-              <h2>{{ap.title}}</h2>
-              <p>{{ap.link}}</p>
-            </ion-label>
-            <ion-label slot="end" text-right>
-              <h3>$ {{ap.cost}}</h3>
-              <p>Milestone {{ap.milestone}}</p>
-            </ion-label>
-          </ion-item>
-
-          <ion-item mode="md" lines="none">
-            <div class="users-container">
-              <div class="users">
-                <img src="assets/imgs/{{ap.apuserimg}}.png" alt=""> <span class="approved-user"> Approved by<a
-                    href="">{{ap.apusername}}</a></span>
+          <ul class="multi-section">
+            <li class="grants-details">
+              <ion-item mode="md" lines="none">
+                <ion-label>
+                  <h2>{{lg.grantName}}</h2>
+                  <p>{{lg.grantLink}}</p>
+                  <div class="users-container">
+                    <div class="users">
+                      <img *ngFor="let user of lg.grantees | slice:0:4" src="{{user.picture}}" alt="">
+                    </div>
+                  </div>
+                </ion-label>
+              </ion-item>
+            </li>
+            <li>
+              <div class="manager-details">
+                <h2>Grant Manager</h2>
+                <img *ngFor="let user of lg.grantManager" src="{{user.picture}}" alt="">
+                <a href="">{{lg.grantManager.userName}}</a>
               </div>
-            </div>
-            <ion-button class="details" mode="md" slot="end">Widthdraw</ion-button>
-          </ion-item>
-        </ion-card-content>
-      </ion-card>
-    </ion-col>
-    <ion-col size="12" size-md="6">
-      <ion-item mode="md" lines="none" class="heading">
-        <ion-label>Withdrawn Payments</ion-label>
-        <ion-button mode="md" size="large" fill="clear" slot="end" color="dark"><i class="gp-filter"></i></ion-button>
-      </ion-item>
-
-      <hr class="dassed-line">
-      <ion-card class="grant" mode="md" *ngFor="let wp of withdrawnPayments">
-        <ion-card-content>
-          <ion-item mode="md" lines="none">
-            <ion-label>
-              <h2>{{wp.title}}</h2>
-              <p>{{wp.link}}</p>
-            </ion-label>
-            <ion-label slot="end" text-right>
-              <h3>$ {{wp.cost}}</h3>
-              <p>Milestone {{wp.milestone}}</p>
-            </ion-label>
-          </ion-item>
-
-          <ion-item mode="md" lines="none">
-            <div class="users-container">
-              <div class="users">
-                <img src="assets/imgs/{{wp.apuserimg}}.png" alt=""> <span class="approved-user"> Approved by<a
-                    href="">{{wp.apusername}}</a></span>
+            </li>
+            <li>
+              <div class="recepients-details">
+                <h2>Grant Recepients</h2>
+                <div class="users">
+                  <img *ngFor="let user of lg.donors | slice:0:4" src="{{user?.picture}}" alt="">
+                </div>
+                <a *ngIf="lg.donors.length > 4" href="">SEE ALL</a>
               </div>
-            </div>
-            <ion-button class="details border" color="fadepurpule" mode="md" slot="end">{{wp.wptime}}</ion-button>
-          </ion-item>
+            </li>
+            <li class="cost-details">
+              <ion-item mode="md" lines="none">
+                <ion-label text-right>
+                  <h3>$ {{lg.totalFund}}</h3>
+                  <p>OUT OF $ {{lg.grantAmount}}</p>
+
+                  <ion-button class="details" mode="md" slot="end" (click)="viewGrunt(lg)">See Details</ion-button>
+
+                </ion-label>
+
+              </ion-item>
+            </li>
+          </ul>
         </ion-card-content>
       </ion-card>
     </ion-col>

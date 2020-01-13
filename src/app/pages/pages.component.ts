@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Events } from '@ionic/angular';
 
 import { Platform, ModalController } from '@ionic/angular';
 import { SplashScreen } from '@ionic-native/splash-screen/ngx';
@@ -38,10 +39,11 @@ export class PagesComponent implements OnInit {
         private platform: Platform,
         private splashScreen: SplashScreen,
         private statusBar: StatusBar,
-        private modalController: ModalController) {
+        private modalController: ModalController,
+        public events: Events
+    ) {
 
         this.initializeApp();
-        console.log('page route');
     }
 
     initializeApp() {
@@ -60,6 +62,16 @@ export class PagesComponent implements OnInit {
             cssClass: 'custom-modal-style',
             mode: "ios"
         })
+
+        modal.onDidDismiss()
+            .then((data) => {
+                const reload = data['data'];
+                // console.log("reload", reload);
+                if (reload && reload.hasOwnProperty('reload') && reload.reload) {
+                    this.events.publish('my-grants', true);
+                }
+            });
+
         return await modal.present();
 
     }

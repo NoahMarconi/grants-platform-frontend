@@ -12,7 +12,6 @@ import { HTTPRESPONSE } from 'src/app/common/http-helper/http-helper.class';
 export class LoginComponent implements OnInit {
   processing = false;
   toastTitle = 'Login';
-  
   user = {
     userName: '',
     password: ''
@@ -34,6 +33,7 @@ export class LoginComponent implements OnInit {
     this.processing = true;
     this.authenticationService.signin(this.user).subscribe((res: HTTPRESPONSE) => {
       if (res.message) {
+        this.processing = false;
         this.toastr.success(res.message, this.toastTitle);
       }
       this.router.navigate(['pages']);

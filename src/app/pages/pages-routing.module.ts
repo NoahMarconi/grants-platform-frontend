@@ -11,7 +11,7 @@ const routes: Routes = [{
     children: [
         {
             path: '',
-            redirectTo: 'home', pathMatch: 'full'
+            redirectTo: 'my-grants', pathMatch: 'full'
         },
         {
             path: 'home',
@@ -31,7 +31,9 @@ const routes: Routes = [{
         }, {
             path: 'trending-grants',
             loadChildren: () => import('./trending-grants/trending-grants.module').then(m => m.TrendingGrantsModule),
-
+        }, {
+            path: 'user-profile',
+            loadChildren: () => import('./profile/profile.module').then(m => m.ProfileModule),
         }, {
             path: 'transaction-history',
             loadChildren: () => import('./transaction-history/transaction-history.module').then(m => m.TransactionHistoryModule),

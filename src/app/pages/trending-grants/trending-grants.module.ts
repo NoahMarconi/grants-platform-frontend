@@ -8,6 +8,9 @@ import { TrendingGrantsComponent } from './trending-grants.component';
 import { MenuPopoverComponent } from '../menu-popover/menu-popover.component';
 import { MenuPopoverModule } from '../menu-popover/menu-popover.module';
 import { HeaderModule } from '../header/header.module';
+import { ViewGruntComponent } from '../view-grunt/view-grunt.component';
+import { ViewGruntModule } from '../view-grunt/view-grunt.module';
+import { GrantService } from 'src/app/services/grant.service';
 
 
 const routes: Routes = [
@@ -23,10 +26,12 @@ const routes: Routes = [
     FormsModule,
     IonicModule,
     HeaderModule,
+    ViewGruntModule,
     MenuPopoverModule,
     RouterModule.forChild(routes)
   ],
-  entryComponents: [MenuPopoverComponent],
-  declarations: [TrendingGrantsComponent]
+  entryComponents: [MenuPopoverComponent,ViewGruntComponent],
+  declarations: [TrendingGrantsComponent],
+  providers : [GrantService]
 })
 export class TrendingGrantsModule {}

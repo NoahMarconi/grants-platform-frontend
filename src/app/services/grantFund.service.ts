@@ -24,4 +24,11 @@ export class GrantFundService extends HttpHelper {
         return this.http.post(this.apiUrl + '/grantFund', data, this.getHttpOptions());
     }
 
+    getGrantFundedByMe(): Observable<any> {
+        return this.http.get(this.apiUrl + '/grantFund/fundedByMe/' + this.user._id, this.getHttpOptions());
+    }
+
+    getGrantFundTask(): Observable<any> {
+        return this.http.get(this.apiUrl + '/grantFund/myFundingTask/' + this.user._id, this.getHttpOptions());
+    }
 }
