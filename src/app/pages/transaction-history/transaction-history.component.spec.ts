@@ -11,11 +11,13 @@ import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { HeaderModule } from '../header/header.module';
 import { RouterModule } from '@angular/router';
+import { GrantFundService } from 'src/app/services/grantFund.service';
+import { ToastrService } from 'ngx-toastr';
 
 describe('TransactionHistoryComponent', () => {
   let component: TransactionHistoryComponent;
   let fixture: ComponentFixture<TransactionHistoryComponent>;
-  
+
 
   beforeEach(async () => {
     TestBed.configureTestingModule({
@@ -28,7 +30,7 @@ describe('TransactionHistoryComponent', () => {
         RouterModule],
       declarations: [TransactionHistoryComponent],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
-      providers: [GrantService]
+      providers: [GrantFundService, ToastrService]
     }).compileComponents();
   });
 
@@ -42,11 +44,10 @@ describe('TransactionHistoryComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('GrantServiceshould be created', () => {
-    const service: GrantService = TestBed.get(GrantService);
+  it('GrantFundService should be created', () => {
+    const service: GrantFundService = TestBed.get(GrantFundService);
     expect(service).toBeTruthy();
   });
 
-  
 })
 

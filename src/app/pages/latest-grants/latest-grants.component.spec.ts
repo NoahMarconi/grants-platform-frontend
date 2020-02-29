@@ -44,7 +44,8 @@ describe('LatestGrantsComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('GrantServiceshould be created', () => {
+  it('GrantService should be created', () => {
+    debugger
     const service: GrantService = TestBed.get(GrantService);
     expect(service).toBeTruthy();
   });

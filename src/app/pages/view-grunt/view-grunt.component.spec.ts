@@ -10,13 +10,14 @@ import { ToastrService, ToastrModule } from 'ngx-toastr';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { NavParams } from '@ionic/angular';
+import { GrantService } from 'src/app/services/grant.service';
 
 
-class MockNavParams{
+class MockNavParams {
   data = {
   };
 
-  get(param){
+  get(param) {
     return this.data[param];
   }
 }
@@ -27,13 +28,13 @@ describe('ViewGruntComponent', () => {
 
   beforeEach(async () => {
     TestBed.configureTestingModule({
-      imports: [FormsModule, ReactiveFormsModule, 
-                RouterTestingModule,  CommonModule,
-                FormsModule,
-                IonicModule,HttpClientTestingModule,ToastrModule.forRoot()],
+      imports: [FormsModule, ReactiveFormsModule,
+        RouterTestingModule, CommonModule,
+        FormsModule,
+        IonicModule, HttpClientTestingModule, ToastrModule.forRoot()],
       declarations: [ViewGruntComponent],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
-      providers: [AuthenticationService,GrantFundService,ToastrService,{provide: NavParams, useClass: MockNavParams},]
+      providers: [AuthenticationService, GrantFundService, GrantService, ToastrService, { provide: NavParams, useClass: MockNavParams },]
     }).compileComponents();
   });
 
@@ -47,7 +48,7 @@ describe('ViewGruntComponent', () => {
     expect(component).toBeTruthy();
   });
 
-    it('AuthenticationService be created', () => {
+  it('AuthenticationService be created', () => {
     const service: AuthenticationService = TestBed.get(AuthenticationService);
     expect(service).toBeTruthy();
   });
@@ -62,5 +63,10 @@ describe('ViewGruntComponent', () => {
     expect(service).toBeTruthy();
   });
 
-  
+  it('GrantService be created', () => {
+    const service: GrantService = TestBed.get(GrantService);
+    expect(service).toBeTruthy();
+  });
+
+
 });

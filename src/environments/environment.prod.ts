@@ -41,6 +41,21 @@ export interface APIOptions {
   webHost: string;
 }
 
+
+export const firebaseConfig = {
+  apiKey: "AIzaSyBd8SxIrn4VBHIOOYI8yxPNlMhHczJkM0Q",
+  authDomain: "grants-platform.firebaseapp.com",
+  databaseURL: "https://grants-platform.firebaseio.com",
+  storageBucket: "grants-platform.appspot.com",
+  projectId: "grants-platform",
+}
+
+export const ethersConfig = {
+  networks: 'ropsten',
+  apiToken: "6KK5NG3BDH1QEVDE2WIMQA7AD3J691QHBV",
+  contractAddress: "0x64F701198216f94A421565D90Fed78856D2b8245"
+}
+
 /*
  * For easier debugging in development mode, you can import the following file
  * to ignore zone related error stack frames such as `zone.run`, `zoneDelegate.invokeTask`.

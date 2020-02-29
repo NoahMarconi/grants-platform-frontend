@@ -26,7 +26,7 @@ describe('HomeComponent', () => {
         RouterModule],
       declarations: [HomeComponent],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
-      providers: [GrantService]
+      providers: []
     }).compileComponents();
   });
 

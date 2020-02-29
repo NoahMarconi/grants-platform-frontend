@@ -11,6 +11,7 @@ import { HTTPRESPONSE } from 'src/app/common/http-helper/http-helper.class';
 })
 export class LoginComponent implements OnInit {
   processing = false;
+  passwordType = false;
   toastTitle = 'Login';
   user = {
     userName: '',
@@ -29,14 +30,18 @@ export class LoginComponent implements OnInit {
   //   element.parentNode.removeChild(element);
   // }
 
+  togglePasswordFieldType() {
+    this.passwordType = !this.passwordType;
+  }
+
   onSubmit() {
     this.processing = true;
     this.authenticationService.signin(this.user).subscribe((res: HTTPRESPONSE) => {
       if (res.message) {
         this.processing = false;
         this.toastr.success(res.message, this.toastTitle);
+        this.router.navigate(['pages']);
       }
-      this.router.navigate(['pages']);
     }, (err) => {
       this.processing = false;
       this.toastr.error('Error Login. Please try after sometime', this.toastTitle);

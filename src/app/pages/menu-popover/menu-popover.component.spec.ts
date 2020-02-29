@@ -8,11 +8,12 @@ import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
 import { GrantService } from 'src/app/services/grant.service';
+import { ToastrService } from 'ngx-toastr';
 
 describe('MenuPopoverComponent', () => {
   let component: MenuPopoverComponent;
   let fixture: ComponentFixture<MenuPopoverComponent>;
-  
+
 
   beforeEach(async () => {
     TestBed.configureTestingModule({
@@ -38,15 +39,10 @@ describe('MenuPopoverComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('GrantServiceshould be created', () => {
+  it('GrantService should be created', () => {
     const service: GrantService = TestBed.get(GrantService);
     expect(service).toBeTruthy();
   });
 
-  it('signOut', () => {
-    spyOn(component.router, 'navigate');
-    component.signOut(event);
-  })
-  
 })
 

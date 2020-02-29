@@ -11,6 +11,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { UserService } from 'src/app/services/user.service';
 import { HTTPRESPONSE } from 'src/app/common/http-helper/http-helper.class';
 import { GrantService } from 'src/app/services/grant.service';
+import { Events } from '@ionic/angular';
 
 @Component({
   selector: 'app-header',
@@ -24,9 +25,10 @@ export class HeaderComponent implements OnInit {
   path: any;
   searchBar: boolean = false;
   myForm: FormGroup;
-  // searchBox: FormControl;
   searchSubscription: Subscription;
   searchResult: any = [];
+
+  picture = false;
 
   @Output() onChange = new EventEmitter();
 
@@ -35,8 +37,17 @@ export class HeaderComponent implements OnInit {
     public modalController: ModalController,
     private route: ActivatedRoute,
     private grantService: GrantService,
+    public events: Events,
+    private userService: UserService,
     private fb: FormBuilder
   ) {
+    this.getUserData();
+    this.events.subscribe('profile-change', (data) => {
+      if (data) {
+        this.getUserData();
+      }
+    });
+
     this.path = this.route.snapshot.pathFromRoot[3].url[0].path;
     if (this.path == "my-grants" || this.path == "latest-grants" || this.path == "trending-grants") {
       this.searchBar = true;
@@ -45,33 +56,27 @@ export class HeaderComponent implements OnInit {
     this.myForm = this.fb.group({
       searchBox: new FormControl()
     });
-
-    this.userData = JSON.parse(localStorage.getItem(AppSettings.localStorage_keys.userData));
-
-    this.grantService.getAll().subscribe((res: HTTPRESPONSE) => {
-      this.allgrant = res.data;
-    })
   }
 
   ngOnInit() {
-    this.searchSubscription = this.myForm.controls.searchBox.valueChanges
-      .pipe(
-        debounceTime(400),
-        distinctUntilChanged()
-      )
-      .subscribe((val: string) => {
-        // console.log("val", val)
-        if (val == '') {
-          this.searchResult = [];
-        } else {
-          this.searchResult = []
-          this.searchResult = this.allgrant.filter((data) => {
-            // console.log("data.name.toLowerCase()", data.name.toLowerCase());
-            return data.grantName.toLowerCase().includes(val.toLowerCase())
-          });
-          console.log("temp", this.searchResult);
-        }
-      })
+    // this.searchSubscription = this.myForm.controls.searchBox.valueChanges
+    //   .pipe(
+    //     debounceTime(400),
+    //     distinctUntilChanged()
+    //   )
+    //   .subscribe((val: string) => {
+    //     // console.log("val", val)
+    //     if (val == '') {
+    //       this.searchResult = [];
+    //     } else {
+    //       this.searchResult = []
+    //       this.searchResult = this.allgrant.filter((data) => {
+    //         // console.log("data.name.toLowerCase()", data.name.toLowerCase());
+    //         return data.grantName.toLowerCase().includes(val.toLowerCase())
+    //       });
+    //       console.log("temp", this.searchResult);
+    //     }
+    //   })
   }
 
   async userMenuPopover($event) {
@@ -83,6 +88,16 @@ export class HeaderComponent implements OnInit {
     })
 
     return await popover.present();
+  }
+
+  getUserData() {
+    // this.userData = JSON.parse(localStorage.getItem(AppSettings.localStorage_keys.userData));
+    this.userService.getUser().subscribe((res: HTTPRESPONSE) => {
+      this.userData = res.data;
+      if (this.userData && this.userData.hasOwnProperty('picture') && this.userData.picture) {
+        this.picture = true;
+      }
+    });
   }
 
   onSearch() {

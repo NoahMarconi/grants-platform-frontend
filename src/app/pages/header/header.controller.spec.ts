@@ -13,7 +13,7 @@ import { MenuPopoverModule } from '../menu-popover/menu-popover.module';
 describe('HeaderComponent', () => {
   let component: HeaderComponent;
   let fixture: ComponentFixture<HeaderComponent>;
-  
+
 
   beforeEach(async () => {
     TestBed.configureTestingModule({
@@ -26,7 +26,7 @@ describe('HeaderComponent', () => {
         MenuPopoverModule,],
       declarations: [HeaderComponent],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
-      providers: [ GrantService]
+      providers: [GrantService]
     }).compileComponents();
   });
 
@@ -40,7 +40,7 @@ describe('HeaderComponent', () => {
     expect(component).toBeTruthy();
   });
 
- it('GrantServiceshould be created', () => {
+  it('GrantServiceshould be created', () => {
     const service: GrantService = TestBed.get(GrantService);
     expect(service).toBeTruthy();
   });

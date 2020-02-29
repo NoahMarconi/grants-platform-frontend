@@ -1,0 +1,36 @@
+<ion-header mode="md" no-border>
+  <ion-toolbar mode="md">
+    <ion-title>Private Key</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="signOut()" color="medium">
+        <ion-icon slot="icon-only" name="log-out"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <form (ngSubmit)="f.form.valid && onSubmit()" #f="ngForm">
+    <div class="form-details">
+      <ion-list lines="none" class="forms" mode="md">
+
+        <ion-item>
+          <ion-input placeholder="Enter Private Key" name="privateKey" [(ngModel)]="privateKey" #key="ngModel"
+            type="text" required>
+          </ion-input>
+        </ion-item>
+
+        <div *ngIf="f.submitted && key.invalid">
+          <span class="error">
+            Please Enter Private Key
+          </span>
+        </div>
+      </ion-list>
+    </div>
+    <div class="submit-button">
+      <ion-button mode="md" class="tt-none" [disabled]="processing" expand="block" type="ngSubmit">
+        Submit
+      </ion-button>
+    </div>
+  </form>
+</ion-content>

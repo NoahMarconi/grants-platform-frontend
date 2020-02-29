@@ -11,7 +11,6 @@ import { ViewGruntModule } from '../view-grunt/view-grunt.module';
 import { ViewGruntRequestRefundModule } from '../view-grunt-request-refund/view-grunt-request-refund.module';
 import { ViewGruntUnmarkAsCompleteModule } from '../view-grunt-unmark-as-complete/view-grunt-unmark-as-complete.module';
 import { ViewGruntNotificationsModule } from '../view-grunt-notifications/view-grunt-notifications.module';
-import { AmountsReceiveModule } from '../amounts-receive/amounts-receive.module';
 import { ViewGruntComponent } from '../view-grunt/view-grunt.component';
 import { ViewGruntRequestRefundComponent } from '../view-grunt-request-refund/view-grunt-request-refund.component';
 import { ViewGruntUnmarkAsCompleteComponent } from '../view-grunt-unmark-as-complete/view-grunt-unmark-as-complete.component';
@@ -37,15 +36,13 @@ const routes: Routes = [
     ViewGruntRequestRefundModule,
     ViewGruntUnmarkAsCompleteModule,
     ViewGruntNotificationsModule,
-    AmountsReceiveModule,
     RouterModule.forChild(routes)
   ],
   entryComponents: [
     ViewGruntComponent,
     ViewGruntRequestRefundComponent,
     ViewGruntUnmarkAsCompleteComponent,
-    ViewGruntNotificationsComponent,
-    AmountsReceiveComponent
+    ViewGruntNotificationsComponent
   ],
   declarations: [MyGrantsComponent],
   providers: [GrantService]

@@ -12,6 +12,7 @@ import { HTTPRESPONSE } from 'src/app/common/http-helper/http-helper.class';
 export class RegisterComponent implements OnInit {
 
   processing = false;
+  passwordType = false;
   toastTitle = 'Signup';
   user = {
     firstName: 'demo',
@@ -27,6 +28,10 @@ export class RegisterComponent implements OnInit {
     private toastr: ToastrService) { }
 
   ngOnInit() {
+  }
+
+  togglePasswordFieldType() {
+    this.passwordType = !this.passwordType;
   }
 
   login() {

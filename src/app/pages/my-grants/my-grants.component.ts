@@ -13,6 +13,7 @@ import { GrantService, IGrant } from 'src/app/services/grant.service';
 import { HTTPRESPONSE } from 'src/app/common/http-helper/http-helper.class';
 import { ENVIRONMENT } from 'src/environments/environment';
 import { GrantFundService } from 'src/app/services/grantFund.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-my-grants',
@@ -33,12 +34,12 @@ export class MyGrantsComponent implements OnInit {
     public modalController: ModalController,
     private grantService: GrantService,
     private grantFundService: GrantFundService,
+    private router: Router,
     public events: Events
   ) {
 
     this.getAllGrants();
     this.events.subscribe('my-grants', (data) => {
-      console.log(data);
       if (data) {
         this.getAllGrants();
       }
@@ -78,6 +79,10 @@ export class MyGrantsComponent implements OnInit {
     return await modal.present();
   }
 
+  grantDetails(id: string) {
+    this.router.navigate(['/pages/grant-details/' + id])
+  }
+
   async viewGruntRequestRefund() {
     const modal = await this.modalController.create({
       component: ViewGruntRequestRefundComponent,
@@ -95,6 +100,7 @@ export class MyGrantsComponent implements OnInit {
     })
     return await modal.present();
   }
+
   async viewGruntNotifications() {
     const modal = await this.modalController.create({
       component: ViewGruntNotificationsComponent,
@@ -103,6 +109,7 @@ export class MyGrantsComponent implements OnInit {
     })
     return await modal.present();
   }
+
   async amountsReceive() {
     const modal = await this.modalController.create({
       component: AmountsReceiveComponent,
@@ -113,7 +120,6 @@ export class MyGrantsComponent implements OnInit {
   }
 
   ngOnInit() {
-    console.log("ngOnInit");
   }
 
   getAllGrants() {
@@ -126,7 +132,7 @@ export class MyGrantsComponent implements OnInit {
     this.grantService.getGrantFundedByMe().subscribe((res: HTTPRESPONSE) => {
       this.fundedByMeGrant = res.data
       this.searchFundedBy = this.fundedByMeGrant;
-      console.log("fundedByMeGrant", this.fundedByMeGrant);
+      // console.log("fundedByMeGrant", this.fundedByMeGrant);
     });
 
     this.grantService.getGrantManagedByMe().subscribe((res: HTTPRESPONSE) => {
@@ -136,7 +142,6 @@ export class MyGrantsComponent implements OnInit {
   }
 
   handleChange(e) {
-    console.log("e", e);
     if (e == '') {
       this.searchCreatedBy = this.createdByMeGrant;
       this.searchFundedBy = this.fundedByMeGrant;

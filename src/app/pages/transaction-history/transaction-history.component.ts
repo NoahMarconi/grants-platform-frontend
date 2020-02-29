@@ -40,11 +40,12 @@ export class TransactionHistoryComponent implements OnInit {
       try {
         let res = await this.grantFundService.getGrantFundedByMe().toPromise();
         this.allGrants = res.data;
+        console.log("this.allGrants", this.allGrants);
 
         this.chartData = this.allGrants.map((data) => {
           let temp = {
             name: data.grant.grantName,
-            value: data.totalFundingAmount
+            value: data.fundingAmount / data.grant.fund * 100
           }
           return temp;
         });

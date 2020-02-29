@@ -28,10 +28,8 @@ export interface IGrant {
 @Injectable()
 export class GrantService extends HttpHelper {
 
-    user: any;
     constructor(private http: HttpClient) {
         super();
-        this.user = JSON.parse(localStorage.getItem(AppSettings.localStorage_keys.userData));
     }
 
     createGrant(data: IGrant): Observable<any> {
@@ -43,22 +41,22 @@ export class GrantService extends HttpHelper {
     }
 
     getById(Id: any): Observable<any> {
-        return this.http.get(this.apiUrl + '/grant/' + Id, this.getHttpOptions())
+        return this.http.get(this.apiUrl + '/grant/get/' + Id, this.getHttpOptions())
     }
 
     getGrantCreatedByMe(): Observable<any> {
-        return this.http.get(this.apiUrl + '/grant/createdByMe/' + this.user._id, this.getHttpOptions());
+        return this.http.get(this.apiUrl + '/grant/createdByMe', this.getHttpOptions());
     }
 
     getGrantFundedByMe(): Observable<any> {
-        return this.http.get(this.apiUrl + '/grant/fundedByMe/' + this.user._id, this.getHttpOptions());
+        return this.http.get(this.apiUrl + '/grant/fundedByMe', this.getHttpOptions());
     }
 
     getGrantManagedByMe(): Observable<any> {
-        return this.http.get(this.apiUrl + '/grant/managedByMe/' + this.user._id, this.getHttpOptions());
+        return this.http.get(this.apiUrl + '/grant/managedByMe', this.getHttpOptions());
     }
 
     getTrendingGrants(): Observable<any> {
-        return this.http.get(this.apiUrl + '/grant/get/getTrendingGrants', this.getHttpOptions());
+        return this.http.get(this.apiUrl + '/grant/trendingGrants', this.getHttpOptions());
     }
 }

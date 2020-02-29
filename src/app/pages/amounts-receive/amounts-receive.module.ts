@@ -5,6 +5,7 @@ import { Routes, RouterModule } from '@angular/router';
 
 import { IonicModule } from '@ionic/angular';
 import { AmountsReceiveComponent } from './amounts-receive.component';
+import { HeaderModule } from '../header/header.module';
 
 
 const routes: Routes = [
@@ -18,9 +19,10 @@ const routes: Routes = [
   imports: [
     CommonModule,
     FormsModule,
+    HeaderModule,
     IonicModule,
-    // RouterModule.forChild(routes)
+    RouterModule.forChild(routes)
   ],
   declarations: [AmountsReceiveComponent]
 })
-export class AmountsReceiveModule {}
+export class AmountsReceiveModule { }

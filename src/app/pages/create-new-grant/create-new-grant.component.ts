@@ -9,6 +9,8 @@ import { Subscription, Observable } from 'rxjs';
 import { FormControl, FormGroup, Validators, FormBuilder, Form, FormArray, AbstractControl } from '@angular/forms';
 import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
 import { AppSettings } from 'src/app/config/app.config';
+import { AngularFireStorage, AngularFireUploadTask } from 'angularfire2/storage';
+import { firebaseConfig } from '../../../environments/environment';
 
 @Component({
   selector: 'app-create-new-grant',
@@ -24,6 +26,13 @@ export class CreateNewGrantComponent implements OnInit {
   userData: any;
   minYear: any;
   maxYear: any;
+
+  tinymceInit: any;
+  task: AngularFireUploadTask;
+  percentage: Observable<number>;
+  snapshot: Observable<any>;
+  downloadURL: Observable<string>;
+  videoExtention = [".3gp", ".mp4", ".webm", ".flv", ".avi", ".HDV", ".mkv"]
 
   public myForm: FormGroup;
   public tempForm: FormGroup;
@@ -42,6 +51,7 @@ export class CreateNewGrantComponent implements OnInit {
   constructor(public modalCtrl: ModalController,
     private grantService: GrantService,
     private userService: UserService,
+    private angularFireStorage: AngularFireStorage,
     private toastr: ToastrService,
     public router: Router,
     private fb: FormBuilder) {
@@ -59,6 +69,100 @@ export class CreateNewGrantComponent implements OnInit {
   }
 
   ngOnInit() {
+
+    this.tinymceInit = {
+      selector: 'textarea',
+      height: 220,
+      menubar: true,
+      plugins: [
+        'autolink',
+        'codesample',
+        'link',
+        'lists',
+        'media',
+        'powerpaste',
+        'table',
+        'image',
+        'quickbars',
+        'codesample',
+        'help',
+      ],
+      toolbar: false,
+      quickbars_insert_toolbar: 'quicktable image media codesample',
+      quickbars_selection_toolbar: 'bold italic underline | formatselect | blockquote quicklink',
+      contextmenu: 'undo redo | inserttable | cell row column deletetable | help',
+      powerpaste_word_import: 'clean',
+      powerpaste_html_import: 'clean',
+      image_advtab: true,
+
+      file_picker_callback: (cb, value, meta) => {
+        var input = document.createElement('input');
+        input.setAttribute('type', 'file');
+        input.setAttribute('accept', '*/*');
+
+        input.onchange = () => {
+          var file = input.files[0];
+
+          // if (file && file.size > 10000000) {
+          //   this.toastr.error("media size !!");
+          // }
+
+          const folder = "grant-content";
+          const fileName = `${new Date().getTime()}_${file.name}`;
+          const path = folder + '/' + fileName;
+          let downloadURL;
+          this.angularFireStorage.upload(path, file)
+            .then((snapshot) => {
+              if (snapshot.state = "success") {
+                downloadURL = 'https://firebasestorage.googleapis.com/v0/b/' + firebaseConfig.storageBucket + '/o/' + folder + '%2F' + fileName + '?alt=media';
+
+                console.log("downloadURL", downloadURL);
+                cb(downloadURL, { title: file.name });
+              }
+            }, (error) => {
+              this.toastr.error("Some thing went wrong !!");
+            });
+        };
+        input.click();
+      },
+
+      images_upload_handler: (blobInfo, success, failure) => {
+        var file = blobInfo.blob();
+        const folder = "grant-content";
+        const fileName = `${new Date().getTime()}_${blobInfo.filename()}`;
+        const path = folder + '/' + fileName;
+        let downloadURL;
+        this.angularFireStorage.upload(path, file)
+          .then((snapshot) => {
+            if (snapshot.state = "success") {
+              downloadURL = 'https://firebasestorage.googleapis.com/v0/b/' + firebaseConfig.storageBucket + '/o/' + folder + '%2F' + fileName + '?alt=media';
+
+              console.log("downloadURL", downloadURL);
+              success(downloadURL);
+            }
+          }, (error) => {
+            this.toastr.error("Some thing went wrong !!");
+            failure();
+          });
+      },
+
+      media_url_resolver: (data, resolve/*, reject*/) => {
+        var embedHtml;
+        this.videoExtention.map((extention) => {
+          if (data.url.indexOf(extention) !== -1) {
+
+            embedHtml = '<iframe src="' + data.url +
+              '" width="400" height="400" ></iframe>';
+          }
+        });
+
+        if (embedHtml) {
+          resolve({ html: embedHtml });
+        } else {
+          resolve({ html: '' });
+        }
+      }
+    };
   }
 
   bindModel() {
@@ -69,7 +173,7 @@ export class CreateNewGrantComponent implements OnInit {
       type: ['singleDeliveryDate', Validators.required],
       grantAmount: [null, Validators.required],
       currency: ['currency', Validators.required],
-      createdBy: [''],
+      content: [''],
       singleDeliveryDate: this.fb.group({
         fundingExpiryDate: ['', Validators.required],
         completionDate: ['', Validators.required],
@@ -152,8 +256,7 @@ export class CreateNewGrantComponent implements OnInit {
 
   onSubmit() {
     this.submitted = true;
-
-    this.router.navigate(['pages/my-grants']);
+    // console.log("content", this.myForm.controls.content.value)
 
     // console.log("this.myForm.controls", this.myForm.controls);
     if (this.myForm.controls.type.value == "singleDeliveryDate") {
@@ -185,8 +288,7 @@ export class CreateNewGrantComponent implements OnInit {
       }
     })
 
-    this.myForm.value.createdBy = this.user._id;
-    console.log("this.myForm.value", this.myForm.value);
+    // console.log("this.myForm.value", this.myForm.value);
 
     this.processing = true;
     this.grantService.createGrant(this.myForm.value).subscribe((res: HTTPRESPONSE) => {
@@ -198,8 +300,43 @@ export class CreateNewGrantComponent implements OnInit {
         this.router.navigate(['pages/my-grants']);
       }
     }, (err) => {
-      this.processing = true;
+      this.processing = false;
       this.toastr.error('Error. Please try after sometime', this.toastTitle);
     });
+  }
+
+  dataURLtoFile(dataurl, filename) {
+
+    var arr = dataurl.split(','),
+      mime = arr[0].match(/:(.*?);/)[1],
+      bstr = atob(arr[1]),
+      n = bstr.length,
+      u8arr = new Uint8Array(n);
+
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+
+    return new File([u8arr], filename, { type: mime });
+  }
+
+  fileUpload(base64: any) {
+    var file = this.dataURLtoFile(base64, 'content.jpeg');
+    // console.log("file", base64);
+    if (file) {
+      const folder = "grant-content";
+      const fileName = `${new Date().getTime()}_${file.name}`;
+      const path = folder + '/' + fileName;
+
+      this.angularFireStorage.upload(path, file).then((snapshot) => {
+        if (snapshot.state = "success") {
+          let downloadURL = 'https://firebasestorage.googleapis.com/v0/b/' + firebaseConfig.storageBucket + '/o/' + folder + '%2F' + fileName + '?alt=media';
+
+          console.log("downloadURL", downloadURL);
+
+          return downloadURL;
+        }
+      });
+    }
   }
 }

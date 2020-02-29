@@ -1,4 +1,4 @@
-<ion-header mode="md" no-border>
+<!-- <ion-header mode="md" no-border>
     <ion-toolbar mode="md">
         <ion-buttons slot="start">
             <ion-menu-button></ion-menu-button>
@@ -11,7 +11,7 @@
             <ion-button mode="md" fill="solid" color="success" class="gbtn">Register</ion-button>
         </ion-buttons>
     </ion-toolbar>
-</ion-header>
+</ion-header> -->
 
 <ion-content padding color="light">
 
@@ -47,8 +47,11 @@
                         </div>
 
                         <ion-item>
-                            <ion-input placeholder="Password" type="password" [(ngModel)]="user.password"
-                                name="password" #password="ngModel" required></ion-input>
+                            <ion-input placeholder="Password" [type]="passwordType ? 'text' : 'password'"
+                                [(ngModel)]="user.password" name="password" #password="ngModel" required></ion-input>
+                            <ion-icon slot="end" (click)="togglePasswordFieldType()"
+                                [name]="passwordType ? 'eye-off' : 'eye'">
+                            </ion-icon>
                         </ion-item>
 
                         <div class="error">

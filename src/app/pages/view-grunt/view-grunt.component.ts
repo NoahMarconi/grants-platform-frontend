@@ -17,8 +17,6 @@ import * as moment from 'moment';
 })
 export class ViewGruntComponent implements OnInit {
 
-  SERVER_URL = ENVIRONMENT.TEMP_URL;
-
   @Input() grantData: any;
 
   statusEnum = {
@@ -33,15 +31,17 @@ export class ViewGruntComponent implements OnInit {
   processing = false;
   submitted = false;
   user: any;
+  allowFunding = true;
 
   grantFund = {
     _id: '',
     grant: '',
     donor: '',
-    fundingAmount: null
+    amount: null
   }
 
-  constructor(public modalCtrl: ModalController,
+  constructor(
+    public modalCtrl: ModalController,
     private toastr: ToastrService,
     private navParams: NavParams,
     public router: Router,
@@ -55,6 +55,7 @@ export class ViewGruntComponent implements OnInit {
       try {
         let res = await this.grantService.getById(this.grantData._id).toPromise();
         this.grant = res.data;
+        console.log("this.grant", this.grant)
 
         if (this.grant.type == "multipleMilestones") {
           this.multipleMilestones = true;
@@ -95,10 +96,26 @@ export class ViewGruntComponent implements OnInit {
           let isAfter = moment(this.grant.singleDeliveryDate.completionDate).isAfter(moment(now));
 
           if (isAfter) {
-            this.grant.singleDeliveryDate["status"] = this.statusEnum.TOBERECEIVED;
-          } else {
             this.grant.singleDeliveryDate["status"] = this.statusEnum.COMPLETED;
+          } else {
+            this.grant.singleDeliveryDate["status"] = this.statusEnum.TOBERECEIVED;
           }
+        }
+
+        this.grant.grantManager.map((data) => {
+          if (data._id == this.user._id) {
+            this.allowFunding = false;
+          }
+        });
+
+        this.grant.grantees.map((data) => {
+          if (data._id == this.user._id) {
+            this.allowFunding = false;
+          }
+        });
+
+        if (this.grant.status == "cancel") {
+          this.allowFunding = false;
         }
 
         // console.log("this.grant", this.grant);
@@ -129,7 +146,7 @@ export class ViewGruntComponent implements OnInit {
   creteteGrantFund() {
     this.submitted = true;
 
-    if (!this.grantFund.fundingAmount) {
+    if (!this.grantFund.amount) {
       return
     }
 

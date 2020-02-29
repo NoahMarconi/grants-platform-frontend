@@ -76,7 +76,7 @@ ion-select {
             right             : 0;
             top               : 0;
             bottom            : 0;
-            width             : 24px;
+            width             : 34px;
             display           : -webkit-box;
             display           : -ms-flexbox;
             display           : flex;
@@ -1360,5 +1360,11 @@ ion-header {
                 }
             }
         }
+    }
+}
+
+@media (min-width:320px) and (max-width: 425px) {
+    ion-item.custom-search {
+        width: 215px;
     }
 }

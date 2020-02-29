@@ -41,6 +41,9 @@ const routes: Routes = [{
             path: 'view-grunt',
             loadChildren: () => import('./view-grunt/view-grunt.module').then(m => m.ViewGruntModule),
         }, {
+            path: 'grant-details',
+            loadChildren: () => import('./grant-details/grant-details.module').then(m => m.GrantDetailsModule),
+        }, {
             path: 'view-grunt-notifications',
             loadChildren: () => import('./view-grunt-notifications/view-grunt-notifications.module').then(m => m.ViewGruntNotificationsModule),
         }, {

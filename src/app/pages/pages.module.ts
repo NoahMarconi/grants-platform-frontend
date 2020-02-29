@@ -10,32 +10,31 @@ import { CommonModule } from '@angular/common';
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
 import { StatusBar } from '@ionic-native/status-bar/ngx';
 import { SplashScreen } from '@ionic-native/splash-screen/ngx';
-import { CreateNewGrantModule } from './create-new-grant/create-new-grant.module';
-import { CreateNewGrantComponent } from './create-new-grant/create-new-grant.component';
-import { NgxChartsModule } from '@swimlane/ngx-charts';
+import { PrivateKeyModelComponent } from './private-key-model/private-key-model.component';
+import { UserService } from '../services/user.service';
 
 const PAGES_COMPONENTS = [
     PagesComponent,
 ];
 
 @NgModule({
+    declarations: [
+        PagesComponent,
+        PrivateKeyModelComponent
+    ],
     imports: [
         IonicModule,
         CommonModule,
         FormsModule,
-        // NgxChartsModule,
-        CreateNewGrantModule,
-        PagesRoutingModule
+        PagesRoutingModule,
         // RouterModule.forChild(routes)
         // MiscellaneousModule
     ],
-    declarations: [
-        PagesComponent
-    ],
-    entryComponents: [CreateNewGrantComponent],
+    entryComponents: [PrivateKeyModelComponent],
     providers: [
         StatusBar,
         SplashScreen,
+        UserService,
         { provide: RouteReuseStrategy, useClass: IonicRouteStrategy }]
 })
 export class PagesModule {

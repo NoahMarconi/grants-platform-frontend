@@ -7,6 +7,7 @@ import { HeaderComponent } from './header.component';
 import { MenuPopoverComponent } from '../menu-popover/menu-popover.component';
 import { MenuPopoverModule } from '../menu-popover/menu-popover.module';
 import { AuthenticationService } from 'src/app/services/authentication.service';
+import { GrantService } from 'src/app/services/grant.service';
 
 
 @NgModule({
@@ -20,6 +21,6 @@ import { AuthenticationService } from 'src/app/services/authentication.service';
   exports: [HeaderComponent],
   declarations: [HeaderComponent],
   entryComponents: [MenuPopoverComponent],
-  providers: [AuthenticationService]
+  providers: [AuthenticationService,GrantService]
 })
 export class HeaderModule { }

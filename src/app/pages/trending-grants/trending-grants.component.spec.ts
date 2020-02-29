@@ -44,7 +44,7 @@ describe('TrendingGrantsComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('GrantServiceshould be created', () => {
+  it('GrantService should be created', () => {
     const service: GrantService = TestBed.get(GrantService);
     expect(service).toBeTruthy();
   });

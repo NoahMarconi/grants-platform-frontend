@@ -15,14 +15,14 @@
     <ion-item lines="none">
       <div class="users-container">
         <div class="users">
-          <img *ngFor="let user of grant?.donors | slice:0:4;" src="{{user?.picture}}" alt="">
+          <img *ngFor="let user of grant?.donors " src="{{user?.picture}}" alt="">
         </div>
         <a *ngIf="grant?.donors.length > 4" href="">View All</a>
       </div>
 
       <div slot="end" class="cost-details">
         <div class="cost">
-          <h3>$ {{grant?.totalFund}}</h3>
+          <h3>$ {{grant?.fund}}</h3>
           <p>OUT OF ${{grant?.grantAmount}}</p>
         </div>
 
@@ -78,16 +78,16 @@
 
   <hr>
 
-  <div class="footer-details">
+  <div *ngIf="allowFunding" class="footer-details">
     <ion-row>
       <!-- <form #form="ngForm" (ngSubmit)="f.form.valid && onSubmit()"> -->
       <ion-col size="8">
         <ion-item lines="none">
-          <ion-input placeholder="Amount" type="number" [(ngModel)]="grantFund.fundingAmount" name="fundingAmount"
-            #fundingAmount="ngModel" required>
+          <ion-input placeholder="Amount" type="number" [(ngModel)]="grantFund.amount" name="amount"
+            #amount="ngModel" required>
           </ion-input>
         </ion-item>
-        <label *ngIf="submitted && fundingAmount.invalid" class="error">
+        <label *ngIf="submitted && amount.invalid" class="error">
           Please Enter Amount
         </label>
       </ion-col>

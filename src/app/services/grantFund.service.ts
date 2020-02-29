@@ -8,7 +8,7 @@ export interface IGrantFund {
     _id: string;
     grant: String;
     donor: string;
-    fundingAmount: number;
+    amount: number;
 }
 
 @Injectable()
@@ -25,10 +25,10 @@ export class GrantFundService extends HttpHelper {
     }
 
     getGrantFundedByMe(): Observable<any> {
-        return this.http.get(this.apiUrl + '/grantFund/fundedByMe/' + this.user._id, this.getHttpOptions());
+        return this.http.get(this.apiUrl + '/grantFund/fundedByMe', this.getHttpOptions());
     }
 
     getGrantFundTask(): Observable<any> {
-        return this.http.get(this.apiUrl + '/grantFund/myFundingTask/' + this.user._id, this.getHttpOptions());
+        return this.http.get(this.apiUrl + '/grantFund/myFundingTask', this.getHttpOptions());
     }
 }
