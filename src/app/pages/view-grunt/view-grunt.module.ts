@@ -7,6 +7,7 @@ import { IonicModule } from '@ionic/angular';
 import { ViewGruntComponent } from './view-grunt.component';
 import { GrantFundService } from 'src/app/services/grantFund.service';
 import { GrantService } from 'src/app/services/grant.service';
+import { NumberonlyDirectiveModule } from 'src/app/common/directives/numberOnlyDirective/numberonlyDirective.module';
 
 
 const routes: Routes = [
@@ -21,6 +22,7 @@ const routes: Routes = [
     CommonModule,
     FormsModule,
     IonicModule,
+    NumberonlyDirectiveModule
     // RouterModule.forChild(routes)
   ],
   declarations: [ViewGruntComponent],

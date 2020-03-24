@@ -38,6 +38,7 @@ export class AppComponent implements OnInit {
 
   subscriptions() {
     this.utilService.onLoaderChange.subscribe((data: ILoader) => {
+      // console.log("spinner");
       if (data.loading) {
         this.spinner.show();
       } else {

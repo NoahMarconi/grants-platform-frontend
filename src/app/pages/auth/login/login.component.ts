@@ -43,6 +43,7 @@ export class LoginComponent implements OnInit {
         this.router.navigate(['pages']);
       }
     }, (err) => {
+      console.log("err", err);
       this.processing = false;
       this.toastr.error('Error Login. Please try after sometime', this.toastTitle);
     });

@@ -22,7 +22,7 @@
                                         <label color="primary">
                                             <input type="file" accept="image/*" [(ngModel)]="profile"
                                                 (change)="fileChangeEvent($event)" />
-                                            Change Profile
+                                            {{ isPicture ? 'Change profile picture' : 'Upload profile picture' }}
                                         </label>
                                     </div>
                                 </div>
@@ -46,6 +46,8 @@
                                         </ion-label>
                                     </ion-item>
                                     <ion-button color="primary" (click)="resetPassword(userData._id)">Change PassWord
+                                    </ion-button>
+                                    <ion-button color="primary" (click)="changePublicKey()">Change Public Key
                                     </ion-button>
                                 </div>
                             </ion-row>

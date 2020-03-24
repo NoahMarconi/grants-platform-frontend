@@ -83,7 +83,7 @@
       <!-- <form #form="ngForm" (ngSubmit)="f.form.valid && onSubmit()"> -->
       <ion-col size="8">
         <ion-item lines="none">
-          <ion-input placeholder="Amount" type="number" [(ngModel)]="grantFund.amount" name="amount"
+          <ion-input placeholder="Amount" type="text" [(ngModel)]="grantFund.amount" name="amount" [OnlyNumber]="true"
             #amount="ngModel" required>
           </ion-input>
         </ion-item>
@@ -92,7 +92,7 @@
         </label>
       </ion-col>
       <ion-col size="4">
-        <ion-button mode="md" expand="block" [disabled]="processing" (click)="creteteGrantFund()">
+        <ion-button mode="md" expand="block" [disabled]="processing" (click)="privateKeyPopup()">
           Fund Grant
         </ion-button>
       </ion-col>

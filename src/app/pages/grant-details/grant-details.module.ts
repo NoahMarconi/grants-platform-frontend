@@ -7,6 +7,7 @@ import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { MyGrantsComponent } from '../my-grants/my-grants.component';
 import { MyGrantsModule } from '../my-grants/my-grants.module';
+import { NumberonlyDirectiveModule } from 'src/app/common/directives/numberOnlyDirective/numberonlyDirective.module';
 
 const routes: Routes = [
   {
@@ -27,6 +28,7 @@ const routes: Routes = [
     IonicModule,
     HeaderModule,
     MyGrantsModule,
+    NumberonlyDirectiveModule,
     RouterModule.forChild(routes)
   ]
 })

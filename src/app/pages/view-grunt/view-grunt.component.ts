@@ -9,6 +9,8 @@ import { AppSettings } from 'src/app/config/app.config';
 import { Router } from '@angular/router';
 import { GrantService } from 'src/app/services/grant.service';
 import * as moment from 'moment';
+import { EthcontractService } from 'src/app/services/ethcontract.service';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-view-grunt',
@@ -46,7 +48,9 @@ export class ViewGruntComponent implements OnInit {
     private navParams: NavParams,
     public router: Router,
     private grantFundService: GrantFundService,
-    private grantService: GrantService) {
+    private grantService: GrantService,
+    private ethcontractService: EthcontractService,
+  ) {
 
     this.user = JSON.parse(localStorage.getItem(AppSettings.localStorage_keys.userData));
     this.grantData = navParams.get('grantData');
@@ -102,14 +106,12 @@ export class ViewGruntComponent implements OnInit {
           }
         }
 
-        this.grant.grantManager.map((data) => {
-          if (data._id == this.user._id) {
-            this.allowFunding = false;
-          }
-        });
+        if (this.grant.grantManager._id == this.user._id) {
+          this.allowFunding = false;
+        }
 
         this.grant.grantees.map((data) => {
-          if (data._id == this.user._id) {
+          if (data.grantee._id == this.user._id) {
             this.allowFunding = false;
           }
         });
@@ -131,39 +133,110 @@ export class ViewGruntComponent implements OnInit {
   dismiss() {
     this.modalCtrl.dismiss()
   }
-  items = [
-    { status: "completed", title: "Milestone 1", date: "02.02.2019", cost: "1,500", totalcost: "5,000" },
-    { status: "completed", title: "Milestone 1", date: "02.02.2019", cost: "1,500", totalcost: "5,000" },
-    { status: "tobereceivesd", title: "Milestone 1", date: "02.02.2019", cost: "1,500", totalcost: "5,000" },
-    { status: "pending", title: "Milestone 1", date: "02.02.2019", cost: "1,500", totalcost: "5,000" },
-    { status: "pending", title: "Milestone 1", date: "02.02.2019", cost: "1,500", totalcost: "5,000" }
-  ]
+
+  // items = [
+  //   { status: "completed", title: "Milestone 1", date: "02.02.2019", cost: "1,500", totalcost: "5,000" },
+  //   { status: "completed", title: "Milestone 1", date: "02.02.2019", cost: "1,500", totalcost: "5,000" },
+  //   { status: "tobereceivesd", title: "Milestone 1", date: "02.02.2019", cost: "1,500", totalcost: "5,000" },
+  //   { status: "pending", title: "Milestone 1", date: "02.02.2019", cost: "1,500", totalcost: "5,000" },
+  //   { status: "pending", title: "Milestone 1", date: "02.02.2019", cost: "1,500", totalcost: "5,000" }
+  // ]
 
   ngOnInit() {
 
   }
 
-  creteteGrantFund() {
+  async grantFundinmg() {
+    // let funding = await this.ethcontractService.fund(this.grant.contractId, this.user.privateKey);
+    // console.log("funding", funding);
+    // return funding;
+  }
+
+  privateKeyPopup() {
+    Swal.fire({
+      title: 'Please enter your private key',
+      input: 'text',
+      inputAttributes: {
+        autocapitalize: 'off'
+      },
+      showCancelButton: true,
+      confirmButtonText: 'OK',
+      allowOutsideClick: false,
+      // showLoaderOnConfirm: true,
+      preConfirm: (data) => {
+        if (data) {
+          return data
+        }
+        return Swal.showValidationMessage(
+          `Private key must be required`
+        )
+      },
+    }).then((result) => {
+      console.log("result", result);
+      if (result.value) {
+        this.ConfirmPopup();
+      }
+    })
+  }
+
+  ConfirmPopup() {
+    const swalWithBootstrapButtons = Swal.mixin({
+      customClass: {
+        confirmButton: 'btn btn-success',
+        cancelButton: 'btn btn-danger'
+      },
+      buttonsStyling: false
+    })
+
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      allowOutsideClick: false,
+      showCancelButton: true,
+      confirmButtonText: 'Yes',
+      cancelButtonText: 'No',
+      reverseButtons: true
+    }).then(async (result) => {
+      if (result.value) {
+        Swal.fire('Deleted!', 'Your request has been sent', 'success');
+      } else if (
+        result.dismiss === Swal.DismissReason.cancel
+      ) {
+        Swal.fire('Cancelled', 'Your request cancelled :)', 'error');
+      }
+    })
+  }
+
+  async creteteGrantFund() {
     this.submitted = true;
 
     if (!this.grantFund.amount) {
       return
     }
 
-    this.grantFund.donor = this.user._id;
-    this.grantFund.grant = this.grantData._id;
-    delete this.grantFund._id
-    // console.log("grant", this.grantFund);
-    this.grantFundService.createGrantFund(this.grantFund).subscribe((res: HTTPRESPONSE) => {
-      if (res.message) {
-        this.toastr.success(res.message, this.toastTitle);
-        let data = { reload: true }
-        this.modalCtrl.dismiss(data);
-      }
-    }, (err) => {
-      this.processing = true;
-      this.toastr.error('Error. Please try after sometime', this.toastTitle);
-    });
-  }
+    // try {
+    console.log("call");
+    // let funding = await this.ethcontractService.fund(this.grant.contractId, this.grantFund.amount);
+    // console.log("funding", funding);
+    // this.grantFund.donor = this.user._id;
+    // this.grantFund.grant = this.grantData._id;
+    // delete this.grantFund._id
+    // // console.log("grant", this.grantFund);
+    // this.grantFundService.createGrantFund(this.grantFund).subscribe((res: HTTPRESPONSE) => {
+    //   if (res.message) {
+    //     this.toastr.success(res.message, this.toastTitle);
+    //     let data = { reload: true }
+    //     this.modalCtrl.dismiss(data);
+    //   }
+    // }, (err) => {
+    //   this.processing = true;
+    //   this.toastr.error('Error. Please try after sometime', this.toastTitle);
+    // });
 
+    // } catch (e) {
+    // this.processing = false;
+    // this.toastr.error('Something went wrong !!', this.toastTitle);
+    // }
+  }
 }

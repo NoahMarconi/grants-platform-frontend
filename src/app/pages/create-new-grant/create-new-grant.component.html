@@ -90,8 +90,9 @@
               </ion-col>
               <ion-col size-lg="6" size-sm="12" class="padding-0">
                 <ion-item>
-                  <ion-datetime class="form-control" [min]="minYear" [max]="maxYear" displayFormat="MMM DD YYYY"
-                    placeholder="Completion Date" formControlName="completionDate"></ion-datetime>
+                  <ion-datetime class="form-control" [min]="minCompletionData" [max]="maxYear"
+                    displayFormat="MMM DD YYYY" placeholder="Completion Date" formControlName="completionDate">
+                  </ion-datetime>
                 </ion-item>
 
                 <div *ngIf="submitted && singleDelivery.completionDate.invalid">
@@ -159,7 +160,7 @@
 
           <div>
             <ion-row class="name">
-              <ion-col size-lg="6" size-sm="12" class="padding-0">
+              <!-- <ion-col size-lg="6" size-sm="12" class="padding-0">
                 <ion-item>
                   <tag-input [formControlName]="'grantManager'" [theme]="'bootstrap'" [onTextChangeDebounce]="500"
                     [secondaryPlaceholder]="'Grant Manager'" [onlyFromAutocomplete]="true" [maxItems]="1">
@@ -176,9 +177,9 @@
                     Please Add Grant Manager
                   </label>
                 </div>
-              </ion-col>
-              <ion-col size-lg="6" size-sm="12" class="padding-0">
+              </ion-col> -->
 
+              <!-- <ion-col size-lg="6" size-sm="12" class="padding-0">
                 <ion-item>
                   <tag-input formControlName="grantees" [theme]="'bootstrap'" [placeholder]="'Add more grantee'"
                     [onTextChangeDebounce]="500" [secondaryPlaceholder]="'Enter grantees'" [onlyFromAutocomplete]="true"
@@ -196,72 +197,14 @@
                     Please Add Grantees
                   </label>
                 </div>
-              </ion-col>
+              </ion-col> -->
 
             </ion-row>
           </div>
 
-
-
-          <!-- <ion-item>
-          <ion-input placeholder="Grant Manager" type="text" formControlName="grantManager" (focusout)="onBlur()"
-            required>
-          </ion-input>
-        </ion-item>
-
-        <div *ngIf="submitted && form.grantManager.invalid">
-          <span class="error">
-            Please Add Grant Manager
-          </span>
-        </div>
-
-        <div *ngIf="searchResult.length" class="drpList">
-          <ul class="results dropdown-ul">
-            <li *ngFor="let x of searchResult" (click)="addGrantManager(x)">
-              {{ x.userName }}
-            </li>
-          </ul>
-        </div> -->
-
-          <!-- <div class="section-title">Grantees</div> -->
-
-
-
-          <!-- <div formArrayName="grantees">
-          <ion-row *ngFor="let control of grantees.controls ; let i = index">
-            <ion-col size="12">
-              <ion-item>
-                <ion-input placeholder="John Smith" type="text" [formControlName]="i" (focusout)="onControlBlur(i)"
-                  (click)="setActiveGrantee(i)" required>
-                </ion-input>
-                <span *ngIf="form.grantees.length >1" (click)="removeGrantees(i)">-</span>
-              </ion-item>
-
-              <div *ngIf="submitted && control.invalid">
-                <span class="error">
-                  Please Add Grantees
-                </span>
-              </div>
-            </ion-col>
-
-            &nbsp;&nbsp;
-
-            <div *ngIf="granteesSearchResult[i].length" class="drpList">
-              <ul class="results dropdown-ul">
-                <li *ngFor="let x of granteesSearchResult[i]" (click)="addGrantees(x)">
-                  {{ x.userName }}
-                </li>
-              </ul>
-            </div>
-
-          </ion-row>
-          <ion-button mode="md" fill="clear" class="tt-none dashed-border" expand="block" (click)="addGranteesFields()">
-            Add New Grantee</ion-button>
-        </div> -->
-
           <ion-row class="inputs name">
             <ion-col class="padding-0" size-lg="6" size-xs="12" size-sm="12">
-              <ion-item>
+              <!-- <ion-item>
                 <ion-input class="form-control" placeholder="Amount" type="text" [OnlyNumber]="true"
                   formControlName="grantAmount" required>
                 </ion-input>
@@ -271,6 +214,25 @@
                 <span class="error">
                   Please Enter Amount
                 </span>
+              </div> -->
+
+              <ion-item>
+                <tag-input [formControlName]="'grantManager'" [theme]="'bootstrap'" [onTextChangeDebounce]="500"
+                  [secondaryPlaceholder]="'Grant Manager'" [onlyFromAutocomplete]="true" (onAdd)="onAddManger($event)"
+                  (onRemove)="onRemoveManager($event)" [maxItems]="1">
+                  <tag-input-dropdown [autocompleteItems]="managerTagInputItem" [minimumTextLength]="0"
+                    [displayBy]="'userName'" [identifyBy]="'userName'">
+                    <ng-template let-item="item" let-index="index">
+                      {{ item.userName }}<img [src]="item.picture" alt="" class="img-resposive">
+                    </ng-template>
+                  </tag-input-dropdown>
+                </tag-input>
+              </ion-item>
+
+              <div *ngIf="submitted && !form.grantManager.value.length">
+                <label class="error">
+                  Please Add Grant Manager
+                </label>
               </div>
             </ion-col>
             <ion-col class="padding-0" size-lg="6" size-xs="12" size-sm="12">
@@ -286,7 +248,62 @@
             </ion-col>
           </ion-row>
 
-          <!-- <div> -->
+          <div formArrayName="grantees">
+            <ion-row class="items name" [formGroupName]="i"
+              *ngFor="let controls of granteeControls.controls; let i=index">
+              <ion-col size-lg="6" size-sm="12" size-xs="12" class="padding-0">
+                <ion-item>
+                  <tag-input formControlName="userName" [theme]="'bootstrap'" [onTextChangeDebounce]="500"
+                    [secondaryPlaceholder]="'Enter Grantees'" [maxItems]="1" [onlyFromAutocomplete]="true"
+                    (onAdd)="onAddGrantee($event)" (onRemove)="onRemoveGrantee($event)" required>
+                    <tag-input-dropdown [autocompleteItems]="tagInputItems" [minimumTextLength]="0"
+                      [displayBy]="'userName'" [identifyBy]="'userName'">
+                      <ng-template let-item="item" let-index="index">
+                        {{ item.userName }}<img [src]="item.picture" alt="" class="img-resposive">
+                      </ng-template>
+                    </tag-input-dropdown>
+                  </tag-input>
+                </ion-item>
+
+                <div *ngIf="submitted && grantee[i].controls.userName.invalid">
+                  <label class="error">
+                    Please Enter Grantee
+                  </label>
+                </div>
+              </ion-col>
+
+              <ion-col size-lg="6" size-sm="12" size-xs="12" class="padding-0">
+                <ion-row>
+                  <ion-col size="11">
+                    <ion-item>
+                      <ion-input class="form-control" placeholder="Amount" formControlName="amount" [OnlyNumber]="true">
+                      </ion-input>
+                    </ion-item>
+                    <div *ngIf="submitted && grantee[i].controls.amount.invalid">
+                      <label class="error">
+                        Please Enter Amount
+                      </label>
+                    </div>
+                  </ion-col>
+                  <ion-col size="1">
+                    <div *ngIf="grantee.length >1" class="close">
+                      <ion-icon (click)="removeGrantee(i)" name="close-circle"></ion-icon>
+                    </div>
+                  </ion-col>
+                </ion-row>
+              </ion-col>
+            </ion-row>
+            <ion-row class="name">
+              <ion-col size="12" class="padding-0">
+                <ion-button mode="md" fill="clear" class="tt-none dashed-border" expand="block"
+                  (click)="addNewGrantee()">
+                  Add New Grantees
+                </ion-button>
+              </ion-col>
+            </ion-row>
+
+          </div>
+
           <ion-row class="name">
             <ion-col class="padding-0">
 
@@ -294,8 +311,6 @@
 
             </ion-col>
           </ion-row>
-
-          <!-- </div> -->
         </ion-list>
       </div>
       <hr>

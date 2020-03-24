@@ -32,8 +32,8 @@ export class GrantService extends HttpHelper {
         super();
     }
 
-    createGrant(data: IGrant): Observable<any> {
-        return this.http.post(this.apiUrl + '/grant', data, this.getHttpOptions());
+    createGrant(id: string): Observable<any> {
+        return this.http.post(this.apiUrl + '/grant/' + id, this.getHttpOptions());
     }
 
     getAll(): Observable<any> {

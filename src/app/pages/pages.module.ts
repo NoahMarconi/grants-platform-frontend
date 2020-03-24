@@ -10,8 +10,8 @@ import { CommonModule } from '@angular/common';
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
 import { StatusBar } from '@ionic-native/status-bar/ngx';
 import { SplashScreen } from '@ionic-native/splash-screen/ngx';
-import { PrivateKeyModelComponent } from './private-key-model/private-key-model.component';
 import { UserService } from '../services/user.service';
+import { PublicKeyModelComponent } from './public-key-model/public-key-model.component';
 
 const PAGES_COMPONENTS = [
     PagesComponent,
@@ -20,7 +20,7 @@ const PAGES_COMPONENTS = [
 @NgModule({
     declarations: [
         PagesComponent,
-        PrivateKeyModelComponent
+        PublicKeyModelComponent
     ],
     imports: [
         IonicModule,
@@ -30,7 +30,7 @@ const PAGES_COMPONENTS = [
         // RouterModule.forChild(routes)
         // MiscellaneousModule
     ],
-    entryComponents: [PrivateKeyModelComponent],
+    entryComponents: [PublicKeyModelComponent],
     providers: [
         StatusBar,
         SplashScreen,

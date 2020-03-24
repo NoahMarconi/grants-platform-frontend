@@ -5,12 +5,16 @@ import { Router } from '@angular/router';
 import { IGrant, GrantService } from 'src/app/services/grant.service';
 import { HTTPRESPONSE } from 'src/app/common/http-helper/http-helper.class';
 import { UserService } from 'src/app/services/user.service';
-import { Subscription, Observable } from 'rxjs';
+import { Subscription, Observable, of } from 'rxjs';
 import { FormControl, FormGroup, Validators, FormBuilder, Form, FormArray, AbstractControl } from '@angular/forms';
 import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
 import { AppSettings } from 'src/app/config/app.config';
 import { AngularFireStorage, AngularFireUploadTask } from 'angularfire2/storage';
 import { firebaseConfig } from '../../../environments/environment';
+import { EthcontractService } from 'src/app/services/ethcontract.service';
+import * as moment from 'moment';
+import { filter } from 'rxjs/operators';
+import { async } from '@angular/core/testing';
 
 @Component({
   selector: 'app-create-new-grant',
@@ -24,14 +28,18 @@ export class CreateNewGrantComponent implements OnInit {
   submitted = false;
   toastTitle = 'Grant';
   userData: any;
+  grantForm: any;
+  tagInputItems = [];
+  managerTagInputItem = [];
   minYear: any;
   maxYear: any;
+  minCompletionData: any;
+  maxCompletionDate: any;
 
   tinymceInit: any;
   task: AngularFireUploadTask;
   percentage: Observable<number>;
   snapshot: Observable<any>;
-  downloadURL: Observable<string>;
   videoExtention = [".3gp", ".mp4", ".webm", ".flv", ".avi", ".HDV", ".mkv"]
 
   public myForm: FormGroup;
@@ -42,7 +50,7 @@ export class CreateNewGrantComponent implements OnInit {
   searchSubscription: Subscription;
   searchResult: any = [];
 
-  activeGrantee: number;
+  activeGrantee: number = 0;
   activeGranteeControl: any;
   granteesSearchBox: FormControl;
   granteesSubscription: Subscription;
@@ -54,21 +62,52 @@ export class CreateNewGrantComponent implements OnInit {
     private angularFireStorage: AngularFireStorage,
     private toastr: ToastrService,
     public router: Router,
-    private fb: FormBuilder) {
+    private fb: FormBuilder,
+    private ethcontractService: EthcontractService,
+  ) {
 
     this.bindModel();
-    this.minYear = new Date().getFullYear();
-    this.maxYear = this.minYear + 100;
+    let curruntDate = new Date();
+    this.maxYear = curruntDate.getFullYear() + 100;
+    this.minYear = moment(curruntDate).add(1, 'days').format('YYYY-MM-DD')
+
 
     this.user = JSON.parse(localStorage.getItem(AppSettings.localStorage_keys.userData));
 
     this.userService.getAll().subscribe((res: HTTPRESPONSE) => {
       this.userData = res.data;
-      console.log("this.userData", this.userData);
+      res.data.map((data) => {
+        if (data.hasOwnProperty('publicKey') && data.publicKey) {
+          this.tagInputItems.push(data);
+          this.managerTagInputItem.push(data);
+        }
+      });
     })
   }
 
   ngOnInit() {
+
+    this.granteeControls.valueChanges
+      .pipe(
+        debounceTime(400),
+        distinctUntilChanged()
+      )
+      .subscribe(async (val: string) => {
+        let temp = 0;
+        this.grantee.map((data) => {
+          temp += +data.controls.amount.value
+        })
+        this.myForm.controls.grantAmount.setValue(temp);
+      });
+
+    this.singleDeliveryControles.controls.fundingExpiryDate.valueChanges
+      .pipe(
+        debounceTime(400),
+        distinctUntilChanged()
+      )
+      .subscribe(async (val: string) => {
+        this.minCompletionData = moment.utc(val).add(1, 'days').format('YYYY-MM-DD');
+      });
 
     this.tinymceInit = {
       selector: 'textarea',
@@ -87,7 +126,7 @@ export class CreateNewGrantComponent implements OnInit {
         'codesample',
         'help',
       ],
-      toolbar: false,
+      toolbar: true,
       quickbars_insert_toolbar: 'quicktable image media codesample',
       quickbars_selection_toolbar: 'bold italic underline | formatselect | blockquote quicklink',
       contextmenu: 'undo redo | inserttable | cell row column deletetable | help',
@@ -163,13 +202,14 @@ export class CreateNewGrantComponent implements OnInit {
         }
       }
     };
+
   }
 
   bindModel() {
     this.myForm = this.fb.group({
       grantName: ['', Validators.required],
       grantLink: ['', Validators.required],
-      grantManager: [[], Validators.required],
+      grantManager: ['', Validators.required],
       type: ['singleDeliveryDate', Validators.required],
       grantAmount: [null, Validators.required],
       currency: ['currency', Validators.required],
@@ -181,7 +221,9 @@ export class CreateNewGrantComponent implements OnInit {
       multipleMilestones: this.fb.array([
         this.initMilestonesFields()
       ]),
-      grantees: [[], Validators.required]
+      grantees: this.fb.array([
+        this.initGranteesFields()
+      ]),
     })
 
   }
@@ -205,11 +247,20 @@ export class CreateNewGrantComponent implements OnInit {
   get multipleMilestones(): any {
     const formArray = this.myForm.get('multipleMilestones') as FormArray;
     return formArray.controls;
-
   }
 
   get multipleMilestonesControls() {
     const formArray = this.myForm.get('multipleMilestones') as FormArray;
+    return formArray;
+  }
+
+  get grantee(): any {
+    const formArray = this.myForm.get('grantees') as FormArray;
+    return formArray.controls;
+  }
+
+  get granteeControls(): any {
+    const formArray = this.myForm.get('grantees') as FormArray;
     return formArray;
   }
 
@@ -219,6 +270,7 @@ export class CreateNewGrantComponent implements OnInit {
       completionDate: new FormControl(null, Validators.required)
     });
   }
+
 
   addNewMilestone() {
     const control = <FormArray>this.myForm.controls.multipleMilestones;
@@ -230,15 +282,87 @@ export class CreateNewGrantComponent implements OnInit {
     control.removeAt(index);
   }
 
+  initGranteesFields() {
+    return this.fb.group({
+      userName: new FormControl('', Validators.required),
+      amount: new FormControl(null, Validators.required)
+    });
+  }
+
+  addNewGrantee() {
+    const control = <FormArray>this.myForm.controls.grantees;
+    control.push(this.initGranteesFields());
+  }
+
+  removeGrantee(index: number) {
+    const control = <FormArray>this.myForm.controls.grantees;
+
+    if (this.myForm.controls.grantees.value[index].userName.length) {
+      this.onRemoveGrantee(this.myForm.controls.grantees.value[index].userName[0]);
+    }
+    control.removeAt(index);
+  }
+
   requestAutocompleteItems = (name: string): Observable<any> => {
     // name = name.toLocaleLowerCase();
     return this.userService.searchUser(name)
       .pipe(map(items => items.data.map(item => item.userName)));
   }
 
-  dismiss() {
-    if (this.modalCtrl) {
-      this.modalCtrl.dismiss()
+  tagCall = true;
+  onAddGrantee(tag) {
+    this.tagInputItems.map((data, i) => {
+      if (data.userName == tag.userName) {
+        this.tagInputItems.splice(i, 1);
+      }
+    });
+
+    if (this.tagCall) {
+      this.tagCall = false;
+      this.onAddManger(tag);
+      this.tagCall = true;
+    }
+  }
+
+  onRemoveGrantee(tag) {
+    this.userData.map((data) => {
+      if (data.userName == tag.userName) {
+        this.tagInputItems.push(data);
+      }
+    })
+
+    if (this.tagCall) {
+      this.tagCall = false;
+      this.onRemoveManager(tag)
+      this.tagCall = true;
+    }
+  }
+
+  onAddManger(tag) {
+    this.managerTagInputItem.map((data, i) => {
+      if (data.userName == tag.userName) {
+        this.managerTagInputItem.splice(i, 1)
+      }
+    })
+
+    if (this.tagCall) {
+      this.tagCall = false;
+      this.onAddGrantee(tag);
+      this.tagCall = true;
+    }
+  }
+
+  onRemoveManager(tag) {
+    this.userData.map((data) => {
+      if (data.userName == tag.userName) {
+        this.managerTagInputItem.push(data)
+      }
+    });
+
+    if (this.tagCall) {
+      this.tagCall = false;
+      this.onRemoveGrantee(tag)
+      this.tagCall = true;
     }
   }
 
@@ -254,55 +378,108 @@ export class CreateNewGrantComponent implements OnInit {
     return (this.form.type.value === name);
   }
 
-  onSubmit() {
+  async deployeContract() {
+    let data, fundingExpiration, contractExpiration;
+
+    if (this.grantForm.type == "singleDeliveryDate") {
+      fundingExpiration = moment(this.grantForm.singleDeliveryDate.fundingExpiryDate).format("X");
+      contractExpiration = moment(this.grantForm.singleDeliveryDate.completionDate).format("X");
+    } else {
+      console.log("this.grantForm.multipleMilestones", this.grantForm.multipleMilestones[this.grantForm.multipleMilestones.length - 1].completionDate);
+      fundingExpiration = moment(this.grantForm.multipleMilestones[this.grantForm.multipleMilestones.length - 1].completionDate).format("X");
+      contractExpiration = moment(this.grantForm.multipleMilestones[this.grantForm.multipleMilestones.length - 1].completionDate).add(1, 'days').format("X");
+    }
+
+    data = {
+      grantees: this.grantForm.grantees.map((data) => { return data.publicKey }),
+      amounts: this.grantForm.grantees.map((data) => { return data.amount }),
+      manager: this.grantForm.grantManager.publicKey,
+      currency: this.grantForm.currency,
+      targetFunding: this.grantForm.grantAmount,
+      fundingExpiration: fundingExpiration,
+      contractExpiration: contractExpiration
+    }
+
+    // console.log("data", data);
+    let contract = await this.ethcontractService.deployContract(data);
+    return contract;
+  }
+
+  async  onSubmit() {
     this.submitted = true;
     // console.log("content", this.myForm.controls.content.value)
 
     // console.log("this.myForm.controls", this.myForm.controls);
     if (this.myForm.controls.type.value == "singleDeliveryDate") {
       if (this.myForm.controls.grantName.invalid || this.myForm.controls.grantLink.invalid || this.myForm.controls.singleDeliveryDate.invalid
-        || this.myForm.controls.grantManager.invalid || this.myForm.controls.grantees.invalid || this.myForm.controls.grantAmount.invalid) {
+        || this.myForm.controls.grantManager.invalid || this.myForm.controls.grantees.invalid) {
         return
       }
     } else {
       if (this.myForm.controls.grantName.invalid || this.myForm.controls.grantLink.invalid || this.myForm.controls.multipleMilestones.invalid
-        || this.myForm.controls.grantManager.invalid || this.myForm.controls.grantees.invalid || this.myForm.controls.grantAmount.invalid) {
+        || this.myForm.controls.grantManager.invalid || this.myForm.controls.grantees.invalid) {
         return
       }
     }
 
+    this.grantForm = JSON.parse(JSON.stringify(this.myForm.value));
+
     let grantees = [];
-    this.myForm.value.grantees.map((data) => {
+    this.grantForm.grantees.map((data) => {
       this.userData.find((user) => {
-        if (user.userName == data.display) {
-          grantees.push(user._id)
+        if (user._id == data.userName[0]._id) {
+          data.userName = user.userName;
+          data.amount = +data.amount;
+          data["grantee"] = user._id;
+          data['publicKey'] = user.publicKey;
+          grantees.push(data)
         }
       })
     })
+    this.grantForm.grantees = grantees;
 
-    this.myForm.value.grantees = grantees;
-
+    let grantManager;
     this.userData.find((user) => {
-      if (user.userName == this.myForm.value.grantManager[0].display) {
-        this.myForm.value.grantManager = [user._id]
+      if (user._id == this.grantForm.grantManager[0]._id) {
+        grantManager = {
+          _id: user._id,
+          publicKey: user.publicKey
+        }
       }
     })
+    this.grantForm.grantManager = grantManager;
 
-    // console.log("this.myForm.value", this.myForm.value);
 
-    this.processing = true;
-    this.grantService.createGrant(this.myForm.value).subscribe((res: HTTPRESPONSE) => {
-      if (res.message) {
+    try {
+      this.processing = true;
+      let contract: any = await this.deployeContract();
+
+      this.grantForm['contractId'] = contract.address;
+      this.grantForm.grantManager = this.grantForm.grantManager._id
+      this.grantForm.grantees = this.grantForm.grantees.map((data) => {
+        return data = {
+          grantee: data.grantee,
+          amount: data.amount
+        }
+      });
+
+      this.grantForm.content = this.grantForm.content.replace(/"/g, "&quot;");
+      console.log("grantData", this.grantForm);
+
+      this.grantService.createGrant(this.grantForm).subscribe((res: HTTPRESPONSE) => {
+        if (res.message) {
+          this.processing = false;
+          this.toastr.success(res.message, this.toastTitle);
+          this.router.navigate(['pages/my-grants']);
+        }
+      }, (err) => {
         this.processing = false;
-        this.toastr.success(res.message, this.toastTitle);
-        let data = { reload: true }
-        this.modalCtrl.dismiss(data);
-        this.router.navigate(['pages/my-grants']);
-      }
-    }, (err) => {
+        this.toastr.error('Error. Please try after sometime', this.toastTitle);
+      });
+    } catch (e) {
       this.processing = false;
-      this.toastr.error('Error. Please try after sometime', this.toastTitle);
-    });
+      this.toastr.error('Something went wrong !!', this.toastTitle);
+    }
   }
 
   dataURLtoFile(dataurl, filename) {

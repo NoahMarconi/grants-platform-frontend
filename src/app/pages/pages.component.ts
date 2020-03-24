@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, NgZone } from '@angular/core';
 import { Events } from '@ionic/angular';
 
 import { Platform, ModalController } from '@ionic/angular';
@@ -9,7 +9,9 @@ import { ethers } from 'ethers';
 import { Router } from '@angular/router';
 import { UserService } from '../services/user.service';
 import { HTTPRESPONSE } from '../common/http-helper/http-helper.class';
-import { PrivateKeyModelComponent } from './private-key-model/private-key-model.component';
+import { async } from '@angular/core/testing';
+import { PublicKeyModelComponent } from './public-key-model/public-key-model.component';
+
 
 @Component({
     selector: 'app-pages',
@@ -55,11 +57,15 @@ export class PagesComponent implements OnInit {
         public events: Events,
         public router: Router,
         private userService: UserService,
+        private _zone: NgZone
     ) {
-        this.userService.getUser().subscribe((res: HTTPRESPONSE) => {
+
+        (async () => {
+            let res: any = await this.userService.getUser().toPromise();
             this.userData = res.data;
-            // console.log(this.userData);
-        });
+            this.publicKeyModal();
+        })();
+
         this.initializeApp();
     }
 
@@ -73,24 +79,20 @@ export class PagesComponent implements OnInit {
     ngOnInit() {
     }
 
-    ngAfterViewInit() {
-        this.privateKetModal();
-    }
-
-    async privateKetModal() {
+    async publicKeyModal() {
         setTimeout(async () => {
-            // console.log("this.userData.hasOwnProperty('privateKey')", !this.userData.hasOwnProperty('privateKey'));
-            // console.log("this.userData.privateKey", !this.userData.privateKey);
-            if (this.userData && (!this.userData.hasOwnProperty('privateKey') || !this.userData.privateKey)) {
-                const modal = await this.modalController.create({
-                    component: PrivateKeyModelComponent,
-                    cssClass: 'custom-modal-style',
-                    backdropDismiss: false,
-                    mode: "ios"
-                });
-                return await modal.present();
+            if (this.userData && (!this.userData.hasOwnProperty('publicKey') || !this.userData.publicKey)) {
+                this._zone.run(async () => {
+                    const modal = await this.modalController.create({
+                        component: PublicKeyModelComponent,
+                        cssClass: 'custom-modal-style',
+                        backdropDismiss: false,
+                        mode: "ios"
+                    });
+                    return await modal.present();
+                })
             }
-        }, 1000);
+        }, 2000);
     }
 
 

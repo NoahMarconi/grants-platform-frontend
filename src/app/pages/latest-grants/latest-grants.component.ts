@@ -6,6 +6,7 @@ import { HTTPRESPONSE } from 'src/app/common/http-helper/http-helper.class';
 import { ENVIRONMENT } from 'src/environments/environment';
 import { Subscription } from 'rxjs';
 import { ViewGruntComponent } from '../view-grunt/view-grunt.component';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-latest-grants',
@@ -18,12 +19,18 @@ export class LatestGrantsComponent implements OnInit {
 
   constructor(public popoverCtrl: PopoverController,
     public modalController: ModalController,
-    private grantService: GrantService) {
+    private grantService: GrantService,
+    private router: Router,
+  ) {
 
     this.getAllGrants();
   }
 
   ngOnInit() {
+  }
+
+  grantDetails(id: string) {
+    this.router.navigate(['/pages/grant-details/' + id])
   }
 
   handleChange(e) {

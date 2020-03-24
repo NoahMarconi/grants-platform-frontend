@@ -11,6 +11,7 @@ import { ImageCroppedEvent } from 'ngx-image-cropper';
 import { ImageCropComponent } from '../image-crop/image-crop.component';
 import { EthcontractService } from 'src/app/services/ethcontract.service';
 import { Subscription } from 'rxjs';
+import { PublicKeyModelComponent } from '../public-key-model/public-key-model.component';
 
 declare let window: any;
 
@@ -25,6 +26,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
   profile: File;
   balance: any;
   account: any;
+  isPicture = false;
   accInfoSubscription: Subscription;
 
   constructor(
@@ -38,15 +40,14 @@ export class ProfileComponent implements OnInit, OnDestroy {
   ) {
     this.getUserData();
 
-    (async () => {
-      await ethcontractService.getAccountInfo();
-    })();
+    // (async () => {
+    // })();
 
     // this.userData = JSON.parse(localStorage.getItem(AppSettings.localStorage_keys.userData));
   }
 
   ngOnInit() {
-    this.getAccountInfo();
+
   }
 
   async userMenuPopover($event) {
@@ -69,21 +70,45 @@ export class ProfileComponent implements OnInit, OnDestroy {
     return await modal.present();
   }
 
+  async changePublicKey() {
+    const modal = await this.modalController.create({
+      component: PublicKeyModelComponent,
+      cssClass: 'custom-modal-style',
+      mode: "ios",
+      componentProps: {
+        isAvailable: true
+      }
+    });
+    return await modal.present();
+  }
+
   getUserData() {
     // this.userData = JSON.parse(localStorage.getItem(AppSettings.localStorage_keys.userData));
     this.userService.getUser().subscribe((res: HTTPRESPONSE) => {
       this.userData = res.data;
+      if (this.userData && this.userData.hasOwnProperty('picture') && this.userData.picture) {
+        this.isPicture = true;
+      }
+
+      console.log()
+      this.getAccountInfo();
     });
   }
 
-  getAccountInfo() {
-    this.ethcontractService.acctInfo.subscribe((data) => {
-      this._zone.run(() => {
-        this.account = data.account;
-        this.balance = data.balance;
-        console.log("acctInfo", data)
-      });
-    })
+  async getAccountInfo() {
+    if (this.userData && this.userData.hasOwnProperty('publicKey') && this.userData.publicKey) {
+      let data: any = await this.ethcontractService.getAccountInfo(this.userData.publicKey);
+      this.account = data.account;
+      this.balance = data.balance;
+    }
+
+    // this.ethcontractService.acctInfo.subscribe((data) => {
+    //   this._zone.run(() => {
+    //     this.account = data.account;
+    //     this.balance = data.balance;
+    //     console.log("acctInfo", data)
+    //   });
+    // })
   }
 
   async imageCrop(data: any) {
@@ -103,6 +128,9 @@ export class ProfileComponent implements OnInit, OnDestroy {
         if (userData) {
           console.log("userData", userData)
           this.userData = userData;
+          if (this.userData && this.userData.hasOwnProperty('picture') && this.userData.picture) {
+            this.isPicture = true;
+          }
         }
       });
 
@@ -114,6 +142,5 @@ export class ProfileComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    // this.accInfoSubscription.unsubscribe();
   }
 }

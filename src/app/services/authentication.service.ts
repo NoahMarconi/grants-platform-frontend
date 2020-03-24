@@ -23,7 +23,7 @@ export class AuthenticationService extends HttpHelper {
         return this.http.post(`${this.apiUrl}/auth/login`, data)
             .pipe(
                 map((res: HTTPRESPONSE) => {
-                    delete res.data.privateKey;
+                    // delete res.data.privateKey;
                     localStorage.setItem(AppSettings.localStorage_keys.token, res.data.token);
                     delete res.data.token;
                     delete res.data.picture;

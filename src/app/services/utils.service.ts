@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
 import { FormGroup } from '@angular/forms';
+import { AngularFireStorage } from 'angularfire2/storage';
+import { firebaseConfig } from 'src/environments/environment';
 
 export interface ILoader {
     loading: boolean;
@@ -17,7 +19,9 @@ export class UtilsService {
 
     private loadersCount = 0;
 
-    constructor() { }
+    constructor(
+        private angularFireStorage: AngularFireStorage,
+    ) { }
 
 
     startLoader(message: string = '') {
@@ -53,6 +57,23 @@ export class UtilsService {
             return new File([u8arr], filename || 'temp', { type: mime });
         } else {
             return false;
+        }
+    }
+
+    fileUpload(base64: any, folder) {
+        var file = this.dataURLtoFile(base64, 'content.jpeg');
+        // console.log("file", base64);
+        if (file) {
+            const fileName = `${new Date().getTime()}_${file.name}`;
+            const path = folder + '/' + fileName;
+
+            this.angularFireStorage.upload(path, file).then((snapshot) => {
+                if (snapshot.state = "success") {
+                    let downloadURL = 'https://firebasestorage.googleapis.com/v0/b/' + firebaseConfig.storageBucket + '/o/' + folder + '%2F' + fileName + '?alt=media';
+
+                    return downloadURL;
+                }
+            });
         }
     }
 
