@@ -5,9 +5,8 @@ import { Observable } from 'rxjs';
 import { AppSettings } from '../config/app.config';
 
 export interface IGrantFund {
-    _id: string;
+    _id?: string;
     grant: String;
-    donor: string;
     amount: number;
 }
 
@@ -20,7 +19,7 @@ export class GrantFundService extends HttpHelper {
         this.user = JSON.parse(localStorage.getItem(AppSettings.localStorage_keys.userData));
     }
 
-    createGrantFund(data: IGrantFund): Observable<any> {
+    addGrantFund(data: IGrantFund): Observable<any> {
         return this.http.post(this.apiUrl + '/grantFund', data, this.getHttpOptions());
     }
 

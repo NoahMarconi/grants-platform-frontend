@@ -2,29 +2,7 @@
 # $ gcloud builds submit . --config=cloudbuild.yaml
 
 steps:
-  # build the container image
-  - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'gcr.io/grantsplatform/grants-platform-frontend', '.']
-  # push the container image to Container Registry
-  - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'gcr.io/grantsplatform/grants-platform-frontend']
-  # Deploy container image to Cloud Run
-  - name: 'gcr.io/cloud-builders/gcloud'
-    args: 
-    - 'run'
-    - 'deploy'
-    - ''
-    - '--image'
-    - 'gcr.io/grantsplatform/grants-platform-frontend'
-    - '--region'
-    - 'us-east1'
-    - '--platform'
-    - 'managed'
-  # images:
-  # - 'gcr.io/grantsplatform/grants-platform-frontend'
-
-# steps:
-#     - name: 'gcr.io/cloud-builders/docker'
-#       args: ['build', '-t', 'gcr.io/grantsplatform/grants-platform-frontend', '.']
-#       timeout: 500s
+    - name: 'gcr.io/cloud-builders/docker'
+      args: ['build', '-t', 'gcr.io/grantsplatform/grants-platform-frontend', '.']
+      timeout: 500s
     

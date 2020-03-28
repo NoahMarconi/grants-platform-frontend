@@ -223,7 +223,7 @@ export class ViewGruntComponent implements OnInit {
     // this.grantFund.grant = this.grantData._id;
     // delete this.grantFund._id
     // // console.log("grant", this.grantFund);
-    // this.grantFundService.createGrantFund(this.grantFund).subscribe((res: HTTPRESPONSE) => {
+    // this.grantFundService.addGrantFund(this.grantFund).subscribe((res: HTTPRESPONSE) => {
     //   if (res.message) {
     //     this.toastr.success(res.message, this.toastTitle);
     //     let data = { reload: true }

@@ -5,6 +5,7 @@ import { GrantService } from 'src/app/services/grant.service';
 import { HTTPRESPONSE } from 'src/app/common/http-helper/http-helper.class';
 import { ViewGruntComponent } from '../view-grunt/view-grunt.component';
 import { ENVIRONMENT } from 'src/environments/environment';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-trending-grants',
@@ -18,12 +19,18 @@ export class TrendingGrantsComponent implements OnInit {
 
   constructor(public popoverCtrl: PopoverController,
     public modalController: ModalController,
-    private grantService: GrantService) {
+    private grantService: GrantService,
+    private router: Router
+  ) {
 
     this.getTrendingGrants();
   }
 
   ngOnInit() {
+  }
+
+  grantDetails(id: string) {
+    this.router.navigate(['/pages/grant-details/' + id])
   }
 
   async userMenuPopover($event) {

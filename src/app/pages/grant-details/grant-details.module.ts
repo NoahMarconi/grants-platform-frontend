@@ -8,6 +8,9 @@ import { IonicModule } from '@ionic/angular';
 import { MyGrantsComponent } from '../my-grants/my-grants.component';
 import { MyGrantsModule } from '../my-grants/my-grants.module';
 import { NumberonlyDirectiveModule } from 'src/app/common/directives/numberOnlyDirective/numberonlyDirective.module';
+import { GrantService } from 'src/app/services/grant.service';
+import { PayoutService } from 'src/app/services/payout.service';
+import { GrantFundService } from 'src/app/services/grantFund.service';
 
 const routes: Routes = [
   {
@@ -30,6 +33,11 @@ const routes: Routes = [
     MyGrantsModule,
     NumberonlyDirectiveModule,
     RouterModule.forChild(routes)
+  ],
+  providers: [
+    GrantService,
+    GrantFundService,
+    PayoutService
   ]
 })
 export class GrantDetailsModule {

@@ -206,11 +206,11 @@
             <ion-col class="padding-0" size-lg="6" size-xs="12" size-sm="12">
               <!-- <ion-item>
                 <ion-input class="form-control" placeholder="Amount" type="text" [OnlyNumber]="true"
-                  formControlName="grantAmount" required>
+                  formControlName="targetFunding" required>
                 </ion-input>
               </ion-item>
 
-              <div *ngIf="submitted && form.grantAmount.invalid">
+              <div *ngIf="submitted && form.targetFunding.invalid">
                 <span class="error">
                   Please Enter Amount
                 </span>
@@ -239,10 +239,8 @@
               <ion-item>
                 <ion-select class="form-control" value="currency" class="custom-arrow" okText="Okay"
                   style="display: inherit;-webkit-appearance: none;" cancelText="Dismiss" formControlName="currency">
-                  <ion-select-option value="currency">Currency</ion-select-option>
-                  <ion-select-option value="blonde">Blonde</ion-select-option>
-                  <ion-select-option value="black">Black</ion-select-option>
-                  <ion-select-option value="red">Red</ion-select-option>
+                  <ion-select-option *ngFor="let option of currency" [value]="option.value">{{ option.name}}
+                  </ion-select-option>
                 </ion-select>
               </ion-item>
             </ion-col>
@@ -276,10 +274,11 @@
                 <ion-row>
                   <ion-col size="11">
                     <ion-item>
-                      <ion-input class="form-control" placeholder="Amount" formControlName="amount" [OnlyNumber]="true">
+                      <ion-input class="form-control" placeholder="Amount" formControlName="allocationAmount"
+                        [OnlyNumber]="true">
                       </ion-input>
                     </ion-item>
-                    <div *ngIf="submitted && grantee[i].controls.amount.invalid">
+                    <div *ngIf="submitted && grantee[i].controls.allocationAmount.invalid">
                       <label class="error">
                         Please Enter Amount
                       </label>
@@ -315,7 +314,7 @@
       </div>
       <hr>
       <div class="total-amount">
-        {{form.grantAmount.value ? form.grantAmount.value : "xxxx"}}
+        {{form.targetFunding.value ? form.targetFunding.value : "xxxx"}}
       </div>
       <ion-row class="name">
         <ion-col class="padding-0">

@@ -35,6 +35,7 @@ export class CreateNewGrantComponent implements OnInit {
   maxYear: any;
   minCompletionData: any;
   maxCompletionDate: any;
+  currency = [];
 
   tinymceInit: any;
   task: AngularFireUploadTask;
@@ -43,18 +44,6 @@ export class CreateNewGrantComponent implements OnInit {
   videoExtention = [".3gp", ".mp4", ".webm", ".flv", ".avi", ".HDV", ".mkv"]
 
   public myForm: FormGroup;
-  public tempForm: FormGroup;
-  private granteeCount: number = 0;
-
-  searchBox: FormControl;
-  searchSubscription: Subscription;
-  searchResult: any = [];
-
-  activeGrantee: number = 0;
-  activeGranteeControl: any;
-  granteesSearchBox: FormControl;
-  granteesSubscription: Subscription;
-  granteesSearchResult: any = [[]];
 
   constructor(public modalCtrl: ModalController,
     private grantService: GrantService,
@@ -87,6 +76,10 @@ export class CreateNewGrantComponent implements OnInit {
 
   ngOnInit() {
 
+    this.currency = [
+      { name: "Wai", value: "wei" }
+    ]
+
     this.granteeControls.valueChanges
       .pipe(
         debounceTime(400),
@@ -95,9 +88,9 @@ export class CreateNewGrantComponent implements OnInit {
       .subscribe(async (val: string) => {
         let temp = 0;
         this.grantee.map((data) => {
-          temp += +data.controls.amount.value
+          temp += +data.controls.allocationAmount.value
         })
-        this.myForm.controls.grantAmount.setValue(temp);
+        this.myForm.controls.targetFunding.setValue(temp);
       });
 
     this.singleDeliveryControles.controls.fundingExpiryDate.valueChanges
@@ -211,8 +204,8 @@ export class CreateNewGrantComponent implements OnInit {
       grantLink: ['', Validators.required],
       grantManager: ['', Validators.required],
       type: ['singleDeliveryDate', Validators.required],
-      grantAmount: [null, Validators.required],
-      currency: ['currency', Validators.required],
+      targetFunding: [null, Validators.required],
+      currency: ['wei', Validators.required],
       content: [''],
       singleDeliveryDate: this.fb.group({
         fundingExpiryDate: ['', Validators.required],
@@ -285,7 +278,7 @@ export class CreateNewGrantComponent implements OnInit {
   initGranteesFields() {
     return this.fb.group({
       userName: new FormControl('', Validators.required),
-      amount: new FormControl(null, Validators.required)
+      allocationAmount: new FormControl(null, Validators.required)
     });
   }
 
@@ -392,10 +385,10 @@ export class CreateNewGrantComponent implements OnInit {
 
     data = {
       grantees: this.grantForm.grantees.map((data) => { return data.publicKey }),
-      amounts: this.grantForm.grantees.map((data) => { return data.amount }),
+      amounts: this.grantForm.grantees.map((data) => { return data.allocationAmount }),
       manager: this.grantForm.grantManager.publicKey,
       currency: this.grantForm.currency,
-      targetFunding: this.grantForm.grantAmount,
+      targetFunding: this.grantForm.targetFunding,
       fundingExpiration: fundingExpiration,
       contractExpiration: contractExpiration
     }
@@ -407,9 +400,7 @@ export class CreateNewGrantComponent implements OnInit {
 
   async  onSubmit() {
     this.submitted = true;
-    // console.log("content", this.myForm.controls.content.value)
-
-    // console.log("this.myForm.controls", this.myForm.controls);
+    // console.log("content", this.myForm.value)
     if (this.myForm.controls.type.value == "singleDeliveryDate") {
       if (this.myForm.controls.grantName.invalid || this.myForm.controls.grantLink.invalid || this.myForm.controls.singleDeliveryDate.invalid
         || this.myForm.controls.grantManager.invalid || this.myForm.controls.grantees.invalid) {
@@ -429,7 +420,7 @@ export class CreateNewGrantComponent implements OnInit {
       this.userData.find((user) => {
         if (user._id == data.userName[0]._id) {
           data.userName = user.userName;
-          data.amount = +data.amount;
+          data.allocationAmount = +data.allocationAmount;
           data["grantee"] = user._id;
           data['publicKey'] = user.publicKey;
           grantees.push(data)
@@ -459,7 +450,7 @@ export class CreateNewGrantComponent implements OnInit {
       this.grantForm.grantees = this.grantForm.grantees.map((data) => {
         return data = {
           grantee: data.grantee,
-          amount: data.amount
+          allocationAmount: data.allocationAmount
         }
       });
 

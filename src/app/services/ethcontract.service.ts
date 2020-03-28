@@ -147,13 +147,18 @@ export class EthcontractService {
                 // }
                 // let provider = new ethers.providers.InfuraProvider(ethersConfig.networks, '56a56ec009b34e31b6aeb4eb817f0772');
 
+                let currency = AddressZero;
+                if (data.currency == "wei") {
+                    currency = AddressZero;
+                }
+
                 let provider = ethers.getDefaultProvider(ethersConfig.networks);
 
                 let wallet = new ethers.Wallet(ethersConfig.privateKey, provider);
                 console.log("wallet", wallet);
                 let factory = new ethers.ContractFactory(tokenAbi.abi, tokenAbi.bytecode, wallet);
 
-                let contract = await factory.deploy(data.grantees, data.amounts, data.manager, AddressZero, data.targetFunding, data.fundingExpiration, data.contractExpiration, { gasLimit: ethersConfig.gasLimit }); ethersConfig
+                let contract = await factory.deploy(data.grantees, data.amounts, data.manager, currency, data.targetFunding, data.fundingExpiration, data.contractExpiration, { gasLimit: ethersConfig.gasLimit });
                 console.log("contract.address", contract.address);
                 console.log("hash", contract.deployTransaction.hash);
 
@@ -203,68 +208,81 @@ export class EthcontractService {
                 console.log("canFund", canFund);
                 resolve(canFund);
             } catch (e) {
-                resolve(e);
+                resolve(false);
             }
         })
     }
 
     fund(contractAddress, amount, userPrivateKey) {
         return new Promise(async (resolve, reject) => {
-            // try {
-            this.utils.startLoader();
+            try {
+                this.utils.startLoader();
 
-            let provider = ethers.getDefaultProvider(ethersConfig.networks);
-            let contract = new ethers.Contract(contractAddress, tokenAbi.abi, provider);
-            let wallet = new ethers.Wallet(userPrivateKey, provider);
-            let contractWithSigner = contract.connect(wallet);
-            console.log("contractWithSigner", contractWithSigner);
-            let fund = await contractWithSigner.fund(amount, { gasLimit: ethersConfig.gasLimit });
-            console.log("fund", fund)
-
-            let funding = await fund.wait();
-            console.log("funding", funding);
-
-            this.utils.stopLoader();
-            resolve(funding);
-            // } catch (e) {
-            //     this.utils.stopLoader();
-            //     reject(e);
-            // }
+                let provider = ethers.getDefaultProvider(ethersConfig.networks);
+                let myWallet = new ethers.Wallet(userPrivateKey, provider);
+                let valuetkn = new ethers.utils.BigNumber(amount);
+                let fund = await myWallet.sendTransaction({
+                    to: contractAddress,
+                    value: valuetkn,
+                    gasLimit: ethersConfig.gasLimit
+                });
+                console.log("fund", fund)
+                let funding = await fund.wait();
+                // console.log("funding", funding);
+                this.utils.stopLoader();
+                resolve({
+                    amount: amount,
+                    status: "Success"
+                });
+            } catch (e) {
+                this.utils.stopLoader();
+                reject({
+                    amount: amount,
+                    status: "Failed"
+                });
+            }
         })
     }
 
-    remainingAllocation(contractAddress, user) {
-        return new Promise(async (resolve) => {
-            // let contractAddress = "0x8899FF97eD1c6EF6416b12E0025E8c8EEF43aFCc"
-            // let user = "0x6D48912C6c768e0CAd669b0154DD85F156284A21"
-
-            let provider = ethers.getDefaultProvider(ethersConfig.networks);
-            let contract = new ethers.Contract(contractAddress, tokenAbi.abi, provider);
-            let remainingAllocation = await contract.remainingAllocation(user);
-            console.log("remainingAllocation", remainingAllocation.toNumber());
+    remainingAllocation(contractAddress, userPublicKey) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                let provider = ethers.getDefaultProvider(ethersConfig.networks);
+                let contract = new ethers.Contract(contractAddress, tokenAbi.abi, provider);
+                let remainingAllocation = await contract.remainingAllocation(userPublicKey);
+                resolve(remainingAllocation.toNumber());
+            } catch (e) {
+                reject();
+            }
         });
     }
 
-    approvePayout() {
-        return new Promise(async (resolve) => {
-            let contractAddress = "0x8899FF97eD1c6EF6416b12E0025E8c8EEF43aFCc"
-            let manager = "0x14791697260E4c9A71f18484C9f997B308e59325"
-            let user = "0x6D48912C6c768e0CAd669b0154DD85F156284A21"
+    approvePayout(contractAddress, managerPrivateKey, granteePublicKey, amount) {
+        return new Promise(async (resolve, reject) => {
+            this.utils.startLoader();
 
             let provider = ethers.getDefaultProvider(ethersConfig.networks);
+            let managerWallet = new ethers.Wallet(managerPrivateKey, provider);
             let contract = new ethers.Contract(contractAddress, tokenAbi.abi, provider);
-            console.log("contract.address", contract);
-            let approvePayout = await contract.approvePayout(manager, user);
-            console.log("approvePayout", approvePayout);
+            let contractWithSigner = contract.connect(managerWallet);
+            let valuetkn = new ethers.utils.BigNumber(amount);
+            let fund = await contractWithSigner.approvePayout(valuetkn, granteePublicKey, { gasLimit: ethersConfig.gasLimit });
+            console.log("fund", fund)
+            let funding = await fund.wait();
+            // console.log("funding", funding);
+            this.utils.stopLoader();
+            resolve({
+                contract: contractAddress,
+                grantee: granteePublicKey,
+                amount: amount,
+                status: "Success"
+            });
         })
     }
 
     cancelGrant(contractAddress, userPrivateKey) {
         return new Promise(async (resolve, reject) => {
             try {
-                // let contractAddress = "0x8899FF97eD1c6EF6416b12E0025E8c8EEF43aFCc"
-                // let userPrivateKey = "0123456789012345678901234567890123456789012345678901234567890123";
-
                 let provider = ethers.getDefaultProvider(ethersConfig.networks);
                 let wallet = new ethers.Wallet(userPrivateKey, provider);
                 let contract = new ethers.Contract(contractAddress, tokenAbi.abi, provider);

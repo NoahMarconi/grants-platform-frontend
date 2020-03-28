@@ -8,6 +8,8 @@ import { EthcontractService } from 'src/app/services/ethcontract.service';
 import { AppSettings } from 'src/app/config/app.config';
 import { async } from '@angular/core/testing';
 import { GrantFundService } from 'src/app/services/grantFund.service';
+import { HTTPRESPONSE } from 'src/app/common/http-helper/http-helper.class';
+import { PayoutService } from 'src/app/services/payout.service';
 
 @Component({
   selector: 'app-grant-details',
@@ -24,42 +26,81 @@ export class GrantDetailsComponent implements OnInit {
     TOBERECEIVED: "tobereceived"
   }
 
+  userEnum = {
+    MANAGER: "manager",
+    GRANTEE: "grantee",
+    DONOR: "donor",
+  }
+
+  userType = this.userEnum.DONOR;
   grant: any;
-  toastTitle = "Grant Funding"
+  payoutRequests: any;
+  toastTitle = "Grant"
   multipleMilestones = false;
   processing = false;
   submitted = false;
   user: any;
-  allowFunding = true;
-
+  canFund: any = false;
+  canRequestPayout = false;
   balance: any = 0;
+  remainingAlloc: any = 0;
 
   grantFund = {
-    _id: '',
     grant: '',
-    donor: '',
     amount: null
+  }
+
+  request = {
+    grant: '',
+    requestAmount: null
   }
 
   constructor(
     private route: ActivatedRoute,
     private grantService: GrantService,
     private grantFundService: GrantFundService,
+    private payoutService: PayoutService,
     private toastr: ToastrService,
     private ethcontractService: EthcontractService,
   ) {
     this.grantId = this.route.snapshot.params.id || '';
-    console.log("this.grantId", this.grantId);
 
     (async () => {
       try {
         this.user = JSON.parse(localStorage.getItem(AppSettings.localStorage_keys.userData));
+        this.grantFund.grant = this.grantId;
+        this.request.grant = this.grantId;
 
         let res = await this.grantService.getById(this.grantId).toPromise();
         this.grant = res.data;
+        console.log("this.grant", this.grant);
         this.grant.content = this.htmlDecode(this.grant.content);
-        this.grantBalance();
-        console.log("this.grant", this.grant)
+
+        if (this.grant.grantManager._id == this.user._id) {
+          this.userType = this.userEnum.MANAGER;
+        }
+
+        this.grant.grantees.map((data) => {
+          if (data.grantee._id == this.user._id) {
+            this.userType = this.userEnum.GRANTEE;
+          }
+        });
+
+        if (this.userType == this.userEnum.MANAGER) {
+          this.payoutService.getByGrant(this.grantId).subscribe((res: HTTPRESPONSE) => {
+            this.payoutRequests = res.data;
+            console.log("this.payoutRequests", this.payoutRequests);
+          })
+        }
+
+        if (this.userType == this.userEnum.GRANTEE) {
+          this.payoutService.getByUserAndGrant(this.grantId).subscribe((res: HTTPRESPONSE) => {
+            this.payoutRequests = res.data;
+            console.log("this.payoutRequests", this.payoutRequests);
+          })
+        }
+
+        this.grantAction();
 
         if (this.grant.type == "multipleMilestones") {
           this.multipleMilestones = true;
@@ -105,23 +146,6 @@ export class GrantDetailsComponent implements OnInit {
             this.grant.singleDeliveryDate["status"] = this.statusEnum.TOBERECEIVED;
           }
         }
-        console.log("this.grant.grantManager", this.user);
-        if (this.grant.grantManager._id == this.user._id) {
-          this.allowFunding = false;
-        }
-
-        this.grant.grantees.map((data) => {
-          if (data.grantee._id == this.user._id) {
-            this.allowFunding = false;
-          }
-        });
-
-        if (this.grant.status == "cancel") {
-          this.allowFunding = false;
-        }
-
-        // console.log("this.grant", this.grant);
-
       } catch (e) {
         this.toastr.error('Error. Please try after sometime', 'Grant');
       }
@@ -130,7 +154,6 @@ export class GrantDetailsComponent implements OnInit {
   }
 
   ngOnInit() {
-
   }
 
   htmlDecode(input: any) {
@@ -139,11 +162,35 @@ export class GrantDetailsComponent implements OnInit {
     return e.value;
   };
 
-  async grantBalance() {
-    this.balance = await this.ethcontractService.checkAvailableBalance(this.grant.contractId);
+  async grantAction() {
+    let promise = [];
+    promise.push(
+      this.ethcontractService.checkAvailableBalance(this.grant.contractId),
+      this.ethcontractService.remainingAllocation(this.grant.contractId, this.user.publicKey),
+      this.ethcontractService.canFund(this.grant.contractId)
+    );
+
+    let promiseRes = await Promise.all(promise);
+    this.balance = promiseRes[0];
+    this.remainingAlloc = promiseRes[1];
+    this.canFund = promiseRes[2];
+
+    if (this.canFund) {
+      if (this.userType == this.userEnum.MANAGER || this.userType == this.userEnum.GRANTEE) {
+        this.canFund = false;
+      }
+    } else {
+      if (this.userType == this.userEnum.GRANTEE) {
+        this.canRequestPayout = true;
+      }
+    }
+
+    console.log("canFund", this.canFund);
+    console.log("canRequestPayout", this.canRequestPayout);
   }
 
-  async cancleGrant() {
+
+  cancleGrantPopup() {
     Swal.fire({
       title: 'Please enter your private key',
       input: 'text',
@@ -183,20 +230,48 @@ export class GrantDetailsComponent implements OnInit {
       reverseButtons: true
     }).then(async (result) => {
       if (result.value) {
-        let cancelGrant = this.ethcontractService.cancelGrant(this.grant.contractId, this.privateKey);
-        if (cancelGrant) {
-          this.grantService.createGrant(this.grantId).subscribe((data) => { });
-        }
-        Swal.fire('Deleted!', 'Your request has been sent', 'success');
+        this.cancelGrant();
+        // Swal.fire('Deleted!', 'Your request has been sent', 'success');
       } else if (
         result.dismiss === Swal.DismissReason.cancel
       ) {
-        Swal.fire('Cancelled', 'Your request cancelled :)', 'error');
+        // Swal.fire('Cancelled', 'Your request cancelled :)', 'error');
       }
     })
   }
 
-  async fundonGrant() {
+  async cancelGrant() {
+    try {
+      if (this.grant.grantManager._id != this.user._id) {
+        if (this.grant.type == "multipleMilestones") {
+          let date = moment(this.grant.multipleMilestones[this.grant.multipleMilestones.length - 1].completionDate, 'DD/MM/YYYY').toISOString();
+          let isAfter = moment(date).isAfter(moment(new Date().toISOString()));
+          if (isAfter) {
+            this.toastr.error('You can not cancel this grant !!');
+            return;
+          }
+        } else {
+          let date = moment(this.grant.singleDeliveryDate.completionDate, 'DD/MM/YYYY').toISOString();
+          let isAfter = moment(date).isAfter(moment(new Date().toISOString()));
+          if (isAfter) {
+            this.toastr.error('You can not cancel this grant !!');
+            return;
+          }
+        }
+      }
+
+      let cancelGrant = await this.ethcontractService.cancelGrant(this.grant.contractId, this.privateKey);
+      if (cancelGrant) {
+        this.grantService.createGrant(this.grantId).subscribe((res: HTTPRESPONSE) => {
+          this.toastr.success('Successfully canceled grant');
+        });
+      }
+    } catch (e) {
+      this.toastr.error('Something went wrong !!', this.toastTitle);
+    }
+  }
+
+  fundOnGrantPopup() {
     this.submitted = true;
 
     if (!this.grantFund.amount) {
@@ -222,23 +297,98 @@ export class GrantDetailsComponent implements OnInit {
         )
       },
     }).then(async (result) => {
-      console.log("result", result);
       if (result.value) {
         this.privateKey = result.value;
-        let funding = await this.ethcontractService.fund(this.grant.contractId, this.grantFund.amount, this.privateKey);
-        console.log("funding", funding);
-        if (funding) {
-          this.grantFundService.createGrantFund(this.grantFund).subscribe((data) => { });
-        }
+        this.ConfirmFundGrant()
+      }
+      this.submitted = false;
+    })
+  }
+
+  ConfirmFundGrant() {
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      allowOutsideClick: false,
+      showCancelButton: true,
+      confirmButtonText: 'Yes',
+      cancelButtonText: 'No',
+      reverseButtons: true
+    }).then(async (result) => {
+      if (result.value) {
+        this.fundOnGrant();
+        // Swal.fire('Deleted!', 'Your request has been sent', 'success');
+      } else if (
+        result.dismiss === Swal.DismissReason.cancel
+      ) {
+        // Swal.fire('Cancelled', 'Your request cancelled :)', 'error');
       }
     })
+  }
 
-    // try {
-    this.submitted = false;
-    // } catch(e) {
-    this.submitted = false;
-    // this.processing = false;
-    // this.toastr.error('Something went wrong !!', this.toastTitle);
-    // }
+  async fundOnGrant() {
+    try {
+      let funding = await this.ethcontractService.fund(this.grant.contractId, this.grantFund.amount, this.privateKey);
+      console.log("funding", funding);
+      if (funding) {
+        this.grantFundService.addGrantFund(this.grantFund).subscribe((res: HTTPRESPONSE) => {
+          this.processing = false;
+          this.submitted = false;
+          this.toastr.success('Successfully sent fund');
+          this.grantAction();
+        });
+      }
+    } catch (e) {
+      this.processing = false;
+      this.submitted = false;
+      this.toastr.error('Something went wrong !!', this.toastTitle);
+    }
+  }
+
+  requestForPayout() {
+    this.payoutService.request(this.request).subscribe((res: HTTPRESPONSE) => {
+      this.processing = false;
+      this.toastr.success(res.message, this.toastTitle);
+      this.grantAction();
+    }, (err) => {
+      this.processing = false;
+      this.toastr.error('Something went wrong !!', this.toastTitle);
+    })
+  }
+
+  confiremAcceptPayout() {
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      allowOutsideClick: false,
+      showCancelButton: true,
+      confirmButtonText: 'Yes',
+      cancelButtonText: 'No',
+      reverseButtons: true
+    }).then(async (result) => {
+      if (result.value) {
+        this.approvePayoutRequest();
+        // Swal.fire('Deleted!', 'Your request has been sent', 'success');
+      } else if (
+        result.dismiss === Swal.DismissReason.cancel
+      ) {
+        // Swal.fire('Cancelled', 'Your request cancelled :)', 'error');
+      }
+    })
+  }
+
+  async approvePayoutRequest() {
+    try {
+      // let approvePayout = this.ethcontractService.approvePayout(this.grant.contractId);
+      // if (approvePayout) {
+
+      // }
+    } catch (e) {
+      this.processing = false;
+      this.submitted = false;
+      this.toastr.error('Something went wrong !!', this.toastTitle);
+    }
   }
 }

@@ -21,7 +21,9 @@
                                                 {{grant?.type == "singleDeliveryDate" ? 'Single Delivery' : 'Multiple Delivery' }}
                                             </h2>
                                             <h2>Grant Manager : {{grant?.grantManager.userName}}</h2>
-                                            <ion-button color="primary" (click)="cancleGrant()">Cancle Grant</ion-button>
+                                            <h2>Your Remaining Allocation : {{remainingAlloc}}</h2>
+                                            <ion-button color="primary" (click)="cancleGrantPopup()">Cancle Grant
+                                            </ion-button>
                                         </ion-label>
                                     </ion-item>
                                 </div>
@@ -33,7 +35,7 @@
                                     <ion-item>
                                         <ion-label class="grants-details">
                                             <h1>US$ {{ balance }}</h1>
-                                            <h3>pledged of US$ 10,000 goal</h3>
+                                            <h3>pledged of US$ {{grant?.targetFunding}} goal</h3>
                                         </ion-label>
                                     </ion-item>
                                 </div>
@@ -41,7 +43,7 @@
                         </ion-col>
                     </ion-row>
                     <ion-row>
-                        <div *ngIf="allowFunding" class="footer-details">
+                        <div *ngIf="canFund" class="footer-details">
                             <ion-row>
                                 <!-- <form #form="ngForm" (ngSubmit)="f.form.valid && onSubmit()"> -->
                                 <ion-col size="8">
@@ -56,8 +58,30 @@
                                 </ion-col>
                                 <ion-col size="4">
                                     <ion-button mode="md" expand="block" [disabled]="processing"
-                                        (click)="fundonGrant()">
+                                        (click)="fundOnGrantPopup()">
                                         Fund Grant
+                                    </ion-button>
+                                </ion-col>
+                                <!-- </form> -->
+                            </ion-row>
+                        </div>
+                        <div *ngIf="canRequestPayout" class="footer-details">
+                            <ion-row>
+                                <!-- <form #form="ngForm" (ngSubmit)="f.form.valid && onSubmit()"> -->
+                                <ion-col size="8">
+                                    <ion-item lines="none">
+                                        <ion-input placeholder="Amount" type="text" [(ngModel)]="request.requestAmount"
+                                            name="requestAmount" [OnlyNumber]="true" #requestAmount="ngModel" required>
+                                        </ion-input>
+                                    </ion-item>
+                                    <label *ngIf="submitted && requestAmount.invalid" class="error">
+                                        Please Enter Amount
+                                    </label>
+                                </ion-col>
+                                <ion-col size="6">
+                                    <ion-button mode="md" expand="block" [disabled]="processing"
+                                        (click)="requestForPayout()">
+                                        Send Request for Payout
                                     </ion-button>
                                 </ion-col>
                                 <!-- </form> -->

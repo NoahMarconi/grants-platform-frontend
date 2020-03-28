@@ -44,7 +44,7 @@
             </ion-label>
             <ion-label text-right class="cost" slot="end">
               <h3>$ {{item.funding}}</h3>
-              <p>OUT OF $ {{grant?.grantAmount}}</p>
+              <p>OUT OF $ {{grant?.targetFunding}}</p>
             </ion-label>
           </ion-item>
         </li>
@@ -78,9 +78,8 @@
 
   <hr>
 
-  <div *ngIf="allowFunding" class="footer-details">
+  <!-- <div *ngIf="allowFunding" class="footer-details">
     <ion-row>
-      <!-- <form #form="ngForm" (ngSubmit)="f.form.valid && onSubmit()"> -->
       <ion-col size="8">
         <ion-item lines="none">
           <ion-input placeholder="Amount" type="text" [(ngModel)]="grantFund.amount" name="amount" [OnlyNumber]="true"
@@ -96,7 +95,6 @@
           Fund Grant
         </ion-button>
       </ion-col>
-      <!-- </form> -->
     </ion-row>
-  </div>
+  </div> -->
 </ion-content>
