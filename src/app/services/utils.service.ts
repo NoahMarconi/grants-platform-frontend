@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
 import { FormGroup } from '@angular/forms';
 import { AngularFireStorage } from 'angularfire2/storage';
-import { firebaseConfig } from 'src/environments/environment';
+import { AppSettings } from '../config/app.config';
 
 export interface ILoader {
     loading: boolean;
@@ -69,7 +69,7 @@ export class UtilsService {
 
             this.angularFireStorage.upload(path, file).then((snapshot) => {
                 if (snapshot.state = "success") {
-                    let downloadURL = 'https://firebasestorage.googleapis.com/v0/b/' + firebaseConfig.storageBucket + '/o/' + folder + '%2F' + fileName + '?alt=media';
+                    let downloadURL = 'https://firebasestorage.googleapis.com/v0/b/' + AppSettings.firebaseConfig.storageBucket + '/o/' + folder + '%2F' + fileName + '?alt=media';
 
                     return downloadURL;
                 }

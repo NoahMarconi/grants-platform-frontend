@@ -10,7 +10,6 @@ import { FormControl, FormGroup, Validators, FormBuilder, Form, FormArray, Abstr
 import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
 import { AppSettings } from 'src/app/config/app.config';
 import { AngularFireStorage, AngularFireUploadTask } from 'angularfire2/storage';
-import { firebaseConfig } from '../../../environments/environment';
 import { EthcontractService } from 'src/app/services/ethcontract.service';
 import * as moment from 'moment';
 import { filter } from 'rxjs/operators';
@@ -146,7 +145,7 @@ export class CreateNewGrantComponent implements OnInit {
           this.angularFireStorage.upload(path, file)
             .then((snapshot) => {
               if (snapshot.state = "success") {
-                downloadURL = 'https://firebasestorage.googleapis.com/v0/b/' + firebaseConfig.storageBucket + '/o/' + folder + '%2F' + fileName + '?alt=media';
+                downloadURL = 'https://firebasestorage.googleapis.com/v0/b/' + AppSettings.firebaseConfig.storageBucket + '/o/' + folder + '%2F' + fileName + '?alt=media';
 
                 console.log("downloadURL", downloadURL);
                 cb(downloadURL, { title: file.name });
@@ -167,7 +166,7 @@ export class CreateNewGrantComponent implements OnInit {
         this.angularFireStorage.upload(path, file)
           .then((snapshot) => {
             if (snapshot.state = "success") {
-              downloadURL = 'https://firebasestorage.googleapis.com/v0/b/' + firebaseConfig.storageBucket + '/o/' + folder + '%2F' + fileName + '?alt=media';
+              downloadURL = 'https://firebasestorage.googleapis.com/v0/b/' + AppSettings.firebaseConfig.storageBucket + '/o/' + folder + '%2F' + fileName + '?alt=media';
 
               console.log("downloadURL", downloadURL);
               success(downloadURL);
@@ -498,7 +497,7 @@ export class CreateNewGrantComponent implements OnInit {
 
       this.angularFireStorage.upload(path, file).then((snapshot) => {
         if (snapshot.state = "success") {
-          let downloadURL = 'https://firebasestorage.googleapis.com/v0/b/' + firebaseConfig.storageBucket + '/o/' + folder + '%2F' + fileName + '?alt=media';
+          let downloadURL = 'https://firebasestorage.googleapis.com/v0/b/' + AppSettings.firebaseConfig.storageBucket + '/o/' + folder + '%2F' + fileName + '?alt=media';
 
           console.log("downloadURL", downloadURL);
 

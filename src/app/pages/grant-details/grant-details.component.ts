@@ -34,7 +34,15 @@ export class GrantDetailsComponent implements OnInit {
 
   userType = this.userEnum.DONOR;
   grant: any;
-  payoutRequests: any;
+  payoutRequests = [];
+  pendingRequest = [];
+  approveRequest = [];
+  rejectRequest = []
+  grantFundTasks = [];
+  totalFundByMe = 0;
+  totalPending = 0;
+  totalApproved = 0;
+  totalReject = 0;
   toastTitle = "Grant"
   multipleMilestones = false;
   processing = false;
@@ -87,17 +95,15 @@ export class GrantDetailsComponent implements OnInit {
         });
 
         if (this.userType == this.userEnum.MANAGER) {
-          this.payoutService.getByGrant(this.grantId).subscribe((res: HTTPRESPONSE) => {
-            this.payoutRequests = res.data;
-            console.log("this.payoutRequests", this.payoutRequests);
-          })
+          this.getManagerData();
         }
 
         if (this.userType == this.userEnum.GRANTEE) {
-          this.payoutService.getByUserAndGrant(this.grantId).subscribe((res: HTTPRESPONSE) => {
-            this.payoutRequests = res.data;
-            console.log("this.payoutRequests", this.payoutRequests);
-          })
+          this.getGranteeData();
+        }
+
+        if (this.userType == this.userEnum.DONOR) {
+          this.getDonorData();
         }
 
         this.grantAction();
@@ -187,6 +193,69 @@ export class GrantDetailsComponent implements OnInit {
 
     console.log("canFund", this.canFund);
     console.log("canRequestPayout", this.canRequestPayout);
+  }
+
+  getManagerData() {
+    this.payoutService.getByGrant(this.grantId).subscribe((res: HTTPRESPONSE) => {
+      this.payoutRequests = res.data;
+      this.pendingRequest = [];
+      this.approveRequest = [];
+      this.rejectRequest = [];
+      this.totalPending = 0;
+      this.totalApproved = 0;
+      this.totalReject = 0;
+      this.payoutRequests.map((data) => {
+        if (data.status == "pending") {
+          this.pendingRequest.push(data);
+          this.totalPending += data.requestAmount;
+        }
+        if (data.status == "approved") {
+          this.approveRequest.push(data);
+          this.totalApproved += data.requestAmount;
+        }
+        if (data.status == "rejected") {
+          this.rejectRequest.push(data);
+          this.totalReject += data.requestAmount;
+        }
+      });
+    })
+  }
+
+  getGranteeData() {
+    this.payoutService.getByUserAndGrant(this.grantId).subscribe((res: HTTPRESPONSE) => {
+      this.payoutRequests = res.data;
+      this.totalPending = 0;
+      this.totalApproved = 0;
+      this.totalReject = 0;
+      this.pendingRequest = [];
+      this.approveRequest = [];
+      this.rejectRequest = [];
+      this.payoutRequests.map((data) => {
+        if (data.status == "pending") {
+          this.pendingRequest.push(data);
+          this.totalPending += data.requestAmount;
+        }
+        if (data.status == "approved") {
+          this.approveRequest.push(data);
+          this.totalApproved += data.requestAmount;
+        }
+        if (data.status == "rejected") {
+          this.rejectRequest.push(data);
+          this.totalReject += data.requestAmount;
+        }
+      });
+      console.log()
+    })
+  }
+
+  getDonorData() {
+    this.grantFundService.getGrantFundTask().subscribe((res: HTTPRESPONSE) => {
+      this.grantFundTasks = res.data;
+      this.totalFundByMe = 0;
+      this.grantFundTasks.map((task) => {
+        this.totalFundByMe += task.amount;
+      });
+    })
   }
 
 
@@ -329,15 +398,18 @@ export class GrantDetailsComponent implements OnInit {
 
   async fundOnGrant() {
     try {
-      let funding = await this.ethcontractService.fund(this.grant.contractId, this.grantFund.amount, this.privateKey);
-      console.log("funding", funding);
-      if (funding) {
+      let funding: any = await this.ethcontractService.fund(this.grant.contractId, this.grantFund.amount, this.privateKey);
+      // console.log("funding", funding);
+      if (funding.status == "Success") {
         this.grantFundService.addGrantFund(this.grantFund).subscribe((res: HTTPRESPONSE) => {
           this.processing = false;
           this.submitted = false;
           this.toastr.success('Successfully sent fund');
+          this.getDonorData();
           this.grantAction();
         });
+      } else {
+        this.toastr.error('Something went wrong !!', this.toastTitle);
       }
     } catch (e) {
       this.processing = false;
@@ -346,18 +418,17 @@ export class GrantDetailsComponent implements OnInit {
     }
   }
 
-  requestForPayout() {
-    this.payoutService.request(this.request).subscribe((res: HTTPRESPONSE) => {
-      this.processing = false;
-      this.toastr.success(res.message, this.toastTitle);
-      this.grantAction();
-    }, (err) => {
-      this.processing = false;
-      this.toastr.error('Something went wrong !!', this.toastTitle);
-    })
-  }
+  ConfirmRequestForPayout() {
+    this.submitted = true;
 
-  confiremAcceptPayout() {
+    if (!this.request.requestAmount) {
+      return
+    }
+
+    if (this.request.requestAmount > this.remainingAlloc) {
+      return
+    }
+
     Swal.fire({
       title: 'Are you sure?',
       text: "You won't be able to revert this!",
@@ -369,7 +440,70 @@ export class GrantDetailsComponent implements OnInit {
       reverseButtons: true
     }).then(async (result) => {
       if (result.value) {
-        this.approvePayoutRequest();
+        this.requestForPayout();
+      } else if (
+        result.dismiss === Swal.DismissReason.cancel
+      ) {
+      }
+    })
+  }
+
+  requestForPayout() {
+    this.payoutService.request(this.request).subscribe((res: HTTPRESPONSE) => {
+      this.request.requestAmount = null
+      this.submitted = false;
+      this.processing = false;
+      this.toastr.success(res.message, this.toastTitle);
+      this.getGranteeData();
+    }, (err) => {
+      this.processing = false;
+      this.toastr.error(err.error.message, this.toastTitle);
+    })
+  }
+
+  approvePayoutRequestPopup(request, index) {
+    this.submitted = true;
+
+    Swal.fire({
+      title: 'Please enter your private key',
+      input: 'text',
+      inputAttributes: {
+        autocapitalize: 'off'
+      },
+      showCancelButton: true,
+      confirmButtonText: 'OK',
+      allowOutsideClick: false,
+      // showLoaderOnConfirm: true,
+      preConfirm: (data) => {
+        if (data) {
+          return data
+        }
+        return Swal.showValidationMessage(
+          `Private key must be required`
+        )
+      },
+    }).then(async (result) => {
+      if (result.value) {
+        this.privateKey = result.value;
+        this.confiremApprovePayout(request, index)
+      }
+      this.submitted = false;
+    })
+  }
+
+  confiremApprovePayout(request, index) {
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      allowOutsideClick: false,
+      showCancelButton: true,
+      confirmButtonText: 'Yes',
+      cancelButtonText: 'No',
+      reverseButtons: true
+    }).then(async (result) => {
+      if (result.value) {
+        this.approvePayoutRequest(request, index);
         // Swal.fire('Deleted!', 'Your request has been sent', 'success');
       } else if (
         result.dismiss === Swal.DismissReason.cancel
@@ -379,16 +513,189 @@ export class GrantDetailsComponent implements OnInit {
     })
   }
 
-  async approvePayoutRequest() {
+  async approvePayoutRequest(request, index) {
     try {
-      // let approvePayout = this.ethcontractService.approvePayout(this.grant.contractId);
-      // if (approvePayout) {
-
-      // }
+      let approvePayout: any = await this.ethcontractService.approvePayout(request.grant.contractId, this.privateKey, request.grantee.publicKey, request.requestAmount);
+      if (approvePayout.status == "Success") {
+        this.payoutService.approve(request._id).subscribe((res: HTTPRESPONSE) => {
+          this.toastr.success(res.message, this.toastTitle);
+          this.getManagerData();
+          this.grantAction();
+        }, (err) => {
+          this.processing = false;
+          this.toastr.error(err.error.message, this.toastTitle);
+        })
+      }
     } catch (e) {
       this.processing = false;
       this.submitted = false;
       this.toastr.error('Something went wrong !!', this.toastTitle);
     }
+  }
+
+  confiremRejectRequest(request, index) {
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      allowOutsideClick: false,
+      showCancelButton: true,
+      confirmButtonText: 'Yes',
+      cancelButtonText: 'No',
+      reverseButtons: true
+    }).then(async (result) => {
+      if (result.value) {
+        this.rejectPayoutRequest(request, index);
+      } else if (
+        result.dismiss === Swal.DismissReason.cancel
+      ) {
+      }
+    })
+  }
+
+  rejectPayoutRequest(request, index) {
+    this.payoutService.rejecte(request._id).subscribe((res: HTTPRESPONSE) => {
+      this.toastr.success(res.message, this.toastTitle);
+      this.getManagerData();
+    }, (err) => {
+      this.processing = false;
+      this.toastr.error(err.error.message, this.toastTitle);
+    })
+  }
+
+  approveRefundRequestPopup(request, index) {
+    this.submitted = true;
+
+    Swal.fire({
+      title: 'Please enter your private key',
+      input: 'text',
+      inputAttributes: {
+        autocapitalize: 'off'
+      },
+      showCancelButton: true,
+      confirmButtonText: 'OK',
+      allowOutsideClick: false,
+      // showLoaderOnConfirm: true,
+      preConfirm: (data) => {
+        if (data) {
+          return data
+        }
+        return Swal.showValidationMessage(
+          `Private key must be required`
+        )
+      },
+    }).then(async (result) => {
+      if (result.value) {
+        this.privateKey = result.value;
+        this.confiremApproveRefund(request, index)
+      }
+      this.submitted = false;
+    })
+  }
+
+  confiremApproveRefund(request, index) {
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      allowOutsideClick: false,
+      showCancelButton: true,
+      confirmButtonText: 'Yes',
+      cancelButtonText: 'No',
+      reverseButtons: true
+    }).then(async (result) => {
+      if (result.value) {
+        this.approveRefundRequest(request, index);
+        // Swal.fire('Deleted!', 'Your request has been sent', 'success');
+      } else if (
+        result.dismiss === Swal.DismissReason.cancel
+      ) {
+        // Swal.fire('Cancelled', 'Your request cancelled :)', 'error');
+      }
+    })
+  }
+
+  async approveRefundRequest(request, index) {
+    try {
+      let approveRefund: any = await this.ethcontractService.approveRefund("0x2401624A0CbcB22e54433F3d0E672607Ee911e85", this.privateKey, "0xb7c1A4eB0f206D38C4Db9798098F5aa6683BCBd8", 20);
+      console.log("approveRefund", approveRefund);
+      if (approveRefund.status == "Success") {
+        console.log("call")
+        // this.payoutService.approve(request._id).subscribe((res: HTTPRESPONSE) => {
+        //   this.toastr.success(res.message, this.toastTitle);
+        //   this.getManagerData();
+        //   this.grantAction();
+        // }, (err) => {
+        //   this.processing = false;
+        //   this.toastr.error(err.error.message, this.toastTitle);
+        // })
+      }
+    } catch (e) {
+      this.processing = false;
+      this.submitted = false;
+      this.toastr.error('Something went wrong !!', this.toastTitle);
+    }
+  }
+
+  withdrawRefundPopup() {
+    this.submitted = true;
+
+    Swal.fire({
+      title: 'Please enter your private key',
+      input: 'text',
+      inputAttributes: {
+        autocapitalize: 'off'
+      },
+      showCancelButton: true,
+      confirmButtonText: 'OK',
+      allowOutsideClick: false,
+      // showLoaderOnConfirm: true,
+      preConfirm: (data) => {
+        if (data) {
+          return data
+        }
+        return Swal.showValidationMessage(
+          `Private key must be required`
+        )
+      },
+    }).then(async (result) => {
+      if (result.value) {
+        this.privateKey = result.value;
+        this.confiremWithdrawRefund()
+      }
+      this.submitted = false;
+    })
+  }
+
+  confiremWithdrawRefund() {
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      allowOutsideClick: false,
+      showCancelButton: true,
+      confirmButtonText: 'Yes',
+      cancelButtonText: 'No',
+      reverseButtons: true
+    }).then(async (result) => {
+      if (result.value) {
+        this.withdrawRefund();
+        // Swal.fire('Deleted!', 'Your request has been sent', 'success');
+      } else if (
+        result.dismiss === Swal.DismissReason.cancel
+      ) {
+        // Swal.fire('Cancelled', 'Your request cancelled :)', 'error');
+      }
+    })
+  }
+
+  async withdrawRefund() {
+    let refund: any = await this.ethcontractService.withdrawRefund("0x2401624A0CbcB22e54433F3d0E672607Ee911e85", "0x14791697260E4c9A71f18484C9f997B308e59325", this.privateKey);
+    // console.log("refund", refund);
+  }
+
+  async signal() {
+    let signal: any = await this.ethcontractService.signal("0x9b145f6e929012CbAcbd9b1E9B008E3a151684A0", "0123456789012345678901234567890123456789012345678901234567890123", true, 10);
+
   }
 }

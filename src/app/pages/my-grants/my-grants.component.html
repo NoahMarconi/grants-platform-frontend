@@ -18,8 +18,8 @@
               <p>{{create.grantLink}}</p>
             </ion-label>
             <ion-label slot="end" text-right>
-              <h3>$ {{create.fund}}</h3>
-              <p>OUT OF $ {{create.grantAmount}}</p>
+              <h3>$ {{create.totalFunding - create.totalPayed}}</h3>
+              <p>OUT OF $ {{create.targetFunding}}</p>
             </ion-label>
           </ion-item>
 
@@ -50,8 +50,8 @@
               <p>{{fund.grantLink}}</p>
             </ion-label>
             <ion-label slot="end" text-right>
-              <h3>$ {{fund.fund}}</h3>
-              <p>OUT OF $ {{fund.grantAmount}}</p>
+              <h3>$ {{fund.totalFunding- fund.totalPayed}}</h3>
+              <p>OUT OF $ {{fund.targetFunding}}</p>
             </ion-label>
           </ion-item>
 
@@ -109,8 +109,8 @@
               <p>{{manage.grantLink}}</p>
             </ion-label>
             <ion-label slot="end" text-right>
-              <h3>$ {{manage.fund}}</h3>
-              <p>OUT OF $ {{manage.grantAmount}}</p>
+              <h3>$ {{manage.totalFunding - manage.totalPayed}}</h3>
+              <p>OUT OF $ {{manage.targetFunding}}</p>
             </ion-label>
           </ion-item>
 

@@ -5,6 +5,7 @@ import { ToastrService } from 'ngx-toastr';
 import { Router } from '@angular/router';
 import { AuthService } from 'src/app/services/auth.service';
 import { NavParams, ModalController } from '@ionic/angular';
+import { UserManagementService } from 'src/app/services/user-management.service';
 
 @Component({
   selector: 'app-public-key-model',
@@ -26,7 +27,8 @@ export class PublicKeyModelComponent implements OnInit {
     private toastr: ToastrService,
     public router: Router,
     private navParams: NavParams,
-    private authService: AuthService
+    private authService: AuthService,
+    private userManagementService: UserManagementService
   ) {
     this.isAvailable = navParams.get('isAvailable');
   }
@@ -44,6 +46,7 @@ export class PublicKeyModelComponent implements OnInit {
     // console.log("this",this.privateKey);
     this.userService.updateUser(this.model).subscribe((res: HTTPRESPONSE) => {
       this.processing = false;
+      this.userManagementService.setUserData(res.data);
       this.modal.dismiss();
       this.toastr.success("Public Key added successfully");
       this.router.navigate(['pages']);

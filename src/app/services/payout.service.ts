@@ -15,6 +15,20 @@ export class PayoutService extends HttpHelper {
         return this.http.post(this.apiUrl + '/payout/request', data, this.getHttpOptions());
     }
 
+    approve(id: string): Observable<any> {
+        let data = {
+            requestId: id
+        }
+        return this.http.post(this.apiUrl + '/payout/approve', data, this.getHttpOptions());
+    }
+
+    rejecte(id: string): Observable<any> {
+        let data = {
+            requestId: id
+        }
+        return this.http.post(this.apiUrl + '/payout/rejecte', data, this.getHttpOptions());
+    }
+
     getAll(): Observable<any> {
         return this.http.get(this.apiUrl + '/payout/request', this.getHttpOptions())
     }

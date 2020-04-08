@@ -16,8 +16,8 @@ import { ToastrModule } from 'ngx-toastr';
 import { AngularFirestoreModule } from 'angularfire2/firestore';
 import { AngularFireModule } from 'angularfire2';
 import { AngularFireStorageModule } from 'angularfire2/storage';
-import { firebaseConfig } from '../environments/environment';
 import { HttpCommonInterceptor } from './common/interceptors/http-common.interceptor';
+import { AppSettings } from './config/app.config';
 
 @NgModule({
   declarations: [AppComponent],
@@ -33,7 +33,7 @@ import { HttpCommonInterceptor } from './common/interceptors/http-common.interce
     }),
     NgxSpinnerModule,
     IonicModule.forRoot(),
-    AngularFireModule.initializeApp(firebaseConfig),
+    AngularFireModule.initializeApp(AppSettings.firebaseConfig),
     AngularFirestoreModule,
     AngularFireStorageModule,
     AppRoutingModule,
